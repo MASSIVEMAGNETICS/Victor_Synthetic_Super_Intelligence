@@ -26,53 +26,71 @@ The Victor Synthetic Super Intelligence Hub is a production-grade integration sy
 
 ## Quick Start
 
-### 🚀 ONE-CLICK INSTALLATION (NEW!)
+### 🚀 ONE-CLICK COMPLETE SYSTEM INSTALLATION (NEW!)
 
-Install and run everything automatically:
+Install and run the **entire Victor ecosystem** with one command:
 
 ```bash
-# Universal installer (works on all platforms)
-python install.py
-```
-
-**Alternative methods:**
-```bash
-# macOS/Linux
-./install.sh
-
-# Windows
-install.bat
+# Complete system installer (Victor Hub + Visual Engine + Everything)
+python install_complete.py
 ```
 
 **What it does:**
-- ✓ Checks Python version
-- ✓ Installs all dependencies
+- ✓ Installs all Python dependencies
+- ✓ Sets up Victor Hub (AGI core)
+- ✓ Sets up Visual Engine (3D avatar)
+- ✓ Creates directory structure
 - ✓ Generates 3D model
-- ✓ Tests backend server
-- ✓ Optionally starts everything
+- ✓ Initializes task queue
+- ✓ Creates launch scripts
+- ✓ Optionally starts everything together
+
+**Installation time:** ~30-60 seconds
+
+---
+
+### Alternative: Visual Engine Only
+
+For just the 3D visual interface:
+
+```bash
+# Visual Engine only installer
+python install.py
+
+# Platform-specific
+./install.sh          # macOS/Linux
+install.bat           # Windows
+```
 
 See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 
 ---
 
-### Running Victor Hub
+### Running the Complete System
 
+**Option 1: Complete System (Recommended)**
 ```bash
-# Start in CLI mode
-python victor_hub/victor_boot.py
-
-# With custom config
-python victor_hub/victor_boot.py --config victor_hub/config.yaml
+# Starts both Victor Hub and Visual Engine together
+./run_victor_complete.sh       # macOS/Linux
+run_victor_complete.bat        # Windows
 ```
 
-### Running Victor Visual Engine
-
+**Option 2: Victor Hub Only**
 ```bash
-# Full demo (recommended for first time)
-python visual_engine/test_visual_engine.py
+./run_victor_hub.sh            # macOS/Linux
+run_victor_hub.bat             # Windows
 
-# Then open Godot project and press F5
-# See visual_engine/QUICKSTART.md for detailed instructions
+# Or directly:
+python victor_hub/victor_boot.py
+```
+
+**Option 3: Visual Engine Only**
+```bash
+./run_visual_engine.sh         # macOS/Linux
+run_visual_engine.bat          # Windows
+
+# Or directly:
+python visual_engine/test_visual_engine.py
 ```
 
 ### Basic Usage
@@ -144,10 +162,14 @@ By integrating multiple repositories, Victor Hub unlocks capabilities that don't
 ```
 Victor_Synthetic_Super_Intelligence/
 ├── README.md
-├── INSTALL.md                          # One-click installation guide
-├── install.py                          # Universal installer (all platforms)
+├── INSTALL.md                          # Installation guide
+├── install_complete.py                 # 🚀 Complete system installer (NEW!)
+├── install.py                          # Visual Engine installer
 ├── install.sh                          # Bash installer (macOS/Linux)
 ├── install.bat                         # Batch installer (Windows)
+├── run_victor_complete.sh/.bat         # Launch complete system (auto-generated)
+├── run_victor_hub.sh/.bat              # Launch Victor Hub only (auto-generated)
+├── run_visual_engine.sh/.bat           # Launch Visual Engine only (auto-generated)
 ├── 00_REPO_MANIFEST.md
 ├── 01_INTERACTION_MAP.md
 ├── 02_VICTOR_INTEGRATED_ARCHITECTURE.md
