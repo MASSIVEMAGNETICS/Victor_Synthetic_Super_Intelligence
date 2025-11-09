@@ -3,3 +3,6 @@
 
 # Core dependencies
 pyyaml>=6.0
+
+# Visual Engine dependencies
+websockets>=11.0

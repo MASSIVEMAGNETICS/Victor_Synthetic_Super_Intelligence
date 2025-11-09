@@ -20,6 +20,7 @@ The Victor Synthetic Super Intelligence Hub is a production-grade integration sy
 - 🚀 **Self-Extension**: Can generate new skills on-demand
 - 💰 **Revenue Modes**: Wraps monetization capabilities as automated services
 - 🛡️ **Safety-First**: Human oversight, sandboxed execution, audit trails
+- 👁️ **Visual Presence**: Real-time 3D avatar interface with emotion-driven animations (NEW)
 
 ---
 
@@ -33,6 +34,16 @@ python victor_hub/victor_boot.py
 
 # With custom config
 python victor_hub/victor_boot.py --config victor_hub/config.yaml
+```
+
+### Running Victor Visual Engine (NEW)
+
+```bash
+# Start visual engine backend
+python launch_visual_engine.py --demo
+
+# Then open Godot project and press F5
+# See visual_engine/QUICKSTART.md for detailed instructions
 ```
 
 ### Basic Usage
@@ -115,6 +126,19 @@ Victor_Synthetic_Super_Intelligence/
 │       ├── echo_skill.py
 │       ├── content_generator.py
 │       └── research_agent.py
+├── visual_engine/                    # NEW: Victor Visual Engine
+│   ├── README.md
+│   ├── QUICKSTART.md
+│   ├── backend/
+│   │   ├── victor_visual_server.py
+│   │   └── victor_visual_bridge.py
+│   ├── godot_project/
+│   │   ├── project.godot
+│   │   ├── scenes/
+│   │   ├── scripts/
+│   │   └── shaders/
+│   └── models/
+│       └── MODEL_SPECIFICATION.md
 ├── logs/
 │   ├── SCAN_LOG.md
 │   └── INTEGRATION_NOTES.md
