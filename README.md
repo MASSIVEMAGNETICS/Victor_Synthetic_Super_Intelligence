@@ -26,6 +26,35 @@ The Victor Synthetic Super Intelligence Hub is a production-grade integration sy
 
 ## Quick Start
 
+### 🚀 ONE-CLICK INSTALLATION (NEW!)
+
+Install and run everything automatically:
+
+```bash
+# Universal installer (works on all platforms)
+python install.py
+```
+
+**Alternative methods:**
+```bash
+# macOS/Linux
+./install.sh
+
+# Windows
+install.bat
+```
+
+**What it does:**
+- ✓ Checks Python version
+- ✓ Installs all dependencies
+- ✓ Generates 3D model
+- ✓ Tests backend server
+- ✓ Optionally starts everything
+
+See [INSTALL.md](INSTALL.md) for detailed installation instructions.
+
+---
+
 ### Running Victor Hub
 
 ```bash
@@ -36,11 +65,11 @@ python victor_hub/victor_boot.py
 python victor_hub/victor_boot.py --config victor_hub/config.yaml
 ```
 
-### Running Victor Visual Engine (NEW)
+### Running Victor Visual Engine
 
 ```bash
-# Start visual engine backend
-python launch_visual_engine.py --demo
+# Full demo (recommended for first time)
+python visual_engine/test_visual_engine.py
 
 # Then open Godot project and press F5
 # See visual_engine/QUICKSTART.md for detailed instructions
@@ -115,6 +144,10 @@ By integrating multiple repositories, Victor Hub unlocks capabilities that don't
 ```
 Victor_Synthetic_Super_Intelligence/
 ├── README.md
+├── INSTALL.md                          # One-click installation guide
+├── install.py                          # Universal installer (all platforms)
+├── install.sh                          # Bash installer (macOS/Linux)
+├── install.bat                         # Batch installer (Windows)
 ├── 00_REPO_MANIFEST.md
 ├── 01_INTERACTION_MAP.md
 ├── 02_VICTOR_INTEGRATED_ARCHITECTURE.md
