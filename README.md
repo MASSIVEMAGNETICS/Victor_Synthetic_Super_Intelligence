@@ -1,0 +1,2 @@
+# Victor_Synthetic_Super_Intelligence
+Victor SSI
