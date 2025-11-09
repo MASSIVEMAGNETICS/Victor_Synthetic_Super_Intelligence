@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/VictorController.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://victor_head_model" path="res://models/victor_head.glb" id="2"]
 
 [node name="VictorScene" type="Node3D"]
 script = ExtResource("1")
@@ -9,11 +10,8 @@ script = ExtResource("1")
 transform = Transform3D(1, 0, 0, 0, 0.996195, 0.0871557, 0, -0.0871557, 0.996195, 0, 0.5, 3)
 fov = 45.0
 
-[node name="VictorHead" type="Node3D" parent="."]
+[node name="VictorHead" parent="." instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Placeholder" type="MeshInstance3D" parent="VictorHead"]
-mesh = SubResource("SphereMesh_placeholder")
 
 [node name="VictorLights" type="Node3D" parent="."]
 
@@ -66,10 +64,6 @@ theme_override_font_sizes/font_size = 24
 text = "Initializing Victor..."
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[sub_resource type="SphereMesh" id="SphereMesh_placeholder"]
-radial_segments = 32
-rings = 16
 
 [sub_resource type="QuadMesh" id="QuadMesh_backdrop"]
 size = Vector2(1, 1)

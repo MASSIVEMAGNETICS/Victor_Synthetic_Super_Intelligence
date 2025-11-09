@@ -208,8 +208,12 @@ visual_engine/
 │   │   └── VictorController.gd     # Main GDScript controller
 │   ├── shaders/
 │   │   └── victor_head_material.gdshader  # Emissive shader
-│   └── assets/                     # 3D models, textures (TBD)
+│   └── models/                     # 3D models
+│       ├── victor_head.glb         # Victor 3D model (binary)
+│       ├── victor_head.gltf        # Victor 3D model (text)
+│       └── README.md               # Model documentation
 ├── models/                         # Model specifications
+│   └── MODEL_SPECIFICATION.md      # Professional model specs
 └── docs/                           # Additional documentation
 ```
 
@@ -217,21 +221,29 @@ visual_engine/
 
 ## Next Steps - Production Readiness
 
-### 1. 3D Model Creation
+### 1. 3D Model ✓
 
-**Current:** Placeholder sphere mesh  
-**Needed:** Full Victor head/helmet model
+**Current:** Procedural geometric model  
+**Status:** Basic 3D model included
 
-Create in Blender:
-- Cyberpunk helmet with angular panels
-- Human eyes (key for "soul")
-- Smooth mask over mouth
-- Rigged for animation
+A procedural 3D model has been generated and integrated:
+- Angular 8-sided helmet (cyberpunk aesthetic)
+- Basic eye geometry
+- PBR metallic material with teal emissive glow
+- ~144 triangles (optimized for real-time)
+- Located at: `godot_project/models/victor_head.glb`
 
-Requirements:
-- Blendshapes for phonemes: `mouth_open`, `mouth_closed`, `mouth_fv`, `jaw_open`
+**For Production:** Professional model with:
+- Detailed panel lines and surface features
+- Blend shapes for phonemes: `mouth_open`, `mouth_closed`, `mouth_fv`, `jaw_open`
 - Eye bones for tracking
-- Export as `.glb` or `.gltf`
+- Higher polygon count (~30K-40K tris)
+- PBR texture maps (see `models/MODEL_SPECIFICATION.md`)
+
+**Regenerate model:**
+```bash
+python generate_victor_model.py
+```
 
 ### 2. Voice/TTS Integration
 

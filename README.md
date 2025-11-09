@@ -136,7 +136,9 @@ Victor_Synthetic_Super_Intelligence/
 │   │   ├── project.godot
 │   │   ├── scenes/
 │   │   ├── scripts/
-│   │   └── shaders/
+│   │   ├── shaders/
+│   │   └── models/                  # 3D model files
+│   │       └── victor_head.glb     # Victor's 3D head model
 │   └── models/
 │       └── MODEL_SPECIFICATION.md
 ├── logs/

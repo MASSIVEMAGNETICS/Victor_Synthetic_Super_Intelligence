@@ -65,9 +65,9 @@ In Godot Editor:
 1. Press **F5** (or click the "Play" button in top-right)
 2. You should see:
    - Black background
-   - Placeholder sphere (represents Victor's head)
+   - Victor's 3D head (angular helmet with glowing eyes)
    - Subtitle text at bottom
-   - Teal lighting
+   - Teal lighting and emissive glow
 
 Check the Godot console (bottom panel):
 ```
