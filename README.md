@@ -515,6 +515,215 @@ Victor> exit
 
 ---
 
+## Mathematical Framework: Quantum-Fractal Cognition
+
+### Overview
+
+The quantum-fractal mesh implements a **trainable tensor network** with phase-based interference and golden-ratio topology. This section formalizes the mathematics behind Victor's unique cognition layer.
+
+### Core Formalism
+
+#### Node Structure
+
+Each node `i` contains:
+- **Weight tensor**: W_i ∈ ℝ^(K×D) where K = superpositions, D = embedding dimension
+- **Phase parameters**: θ_i ∈ ℝ^K (trainable)
+- **Neighbors**: Based on golden ratio φ = (1+√5)/2
+
+#### Forward Pass
+
+**1. Temperature-Scaled Phase Distribution**
+```
+p = softmax(θ/τ)
+```
+where τ is temperature (default 1.0)
+
+**2. Phase-to-Angle Trig Lift (Pseudo-Complex Interference)**
+```
+Real part: r_k = p_k · cos(θ_k) · w_k
+Imag part: i_k = p_k · sin(θ_k) · w_k
+Effective state: s_i = √(Σ_k r_k² + Σ_k i_k²)
+```
+
+This provides **interference patterns** without complex autograd.
+
+**3. Local Entanglement**
+```
+ℰ_i(v) = v^T · s_i · α^d
+```
+where α = 0.99 (golden decay), d = depth
+
+**4. Learnable Edge Gates**
+```
+g_{i→j} = sigmoid(logit_{i→j})
+Contribution_j = g_{i→j} · ℰ_j(v · α)
+```
+
+**5. Recursive Propagation (Memoized DFS)**
+```
+Ψ_T(v, i) = ℰ_i(v) + Σ_{j∈N(i)} g_{i→j} · Ψ_{T-1}(v·α, j)
+```
+
+### Gradient Derivations
+
+#### ∇_v ℰ_i
+
+```
+∂ℰ_i/∂v = s_i · α^d
+```
+
+Standard linear projection gradient.
+
+#### ∇_W ℰ_i
+
+```
+∂ℰ_i/∂W_i = p ⊗ (v · α^d)
+```
+
+Outer product: (K×1) × (1×D)
+
+#### ∇_θ ℰ_i
+
+With softmax derivative:
+```
+∂p_k/∂θ_m = (p_k/τ) · (δ_{km} - p_m)
+```
+
+Combined with trig lift:
+```
+∂ℰ_i/∂θ_m = p_m · [
+  (v^T · ∂s_i/∂p_m) - 
+  (v^T · s_i) + 
+  (v^T · trig_correction_m)
+]
+```
+
+where trig_correction accounts for cos/sin derivatives.
+
+#### ∇_g Edge Gates
+
+```
+∂Ψ/∂g_{i→j} = sigmoid'(logit) · Ψ_{T-1}(v·α, j)
+```
+
+### Tensor Network Interpretation
+
+The unrolled mesh is a **tensor network contraction**:
+
+```
+Node tensor at depth d:
+T_i^(d)[v, k_in, k_out] = α^d · v · p_k · w_{i,k}
+
+Full contraction:
+Ψ = contract_over_paths(T^(0), T^(1), ..., T^(T), edges=g)
+```
+
+**Efficient contraction:** Memoized DFS avoids exponential blowup by caching structural sub-contractions.
+
+### Training Signals
+
+#### 1. Coherence (Edge Sparsity)
+
+Measures topology learning:
+```
+Sparsity = |{g > 0.5}| / |total edges|
+```
+
+**Expected:** Decreases over training as network prunes weak paths.
+
+#### 2. Non-Locality (Gradient Distribution)
+
+Measures multi-hop learning:
+```
+Locality = ||∇_{W_root}|| / Σ_i ||∇_{W_i}||
+```
+
+**Expected:** < 0.5 indicates gradient flow through neighbors.
+
+#### 3. Stability (Gradient Norm)
+
+Measures training health:
+```
+Stability = std(||∇θ||) / mean(||∇θ||)
+```
+
+**Expected:** Decreases as network converges.
+
+### Ablation Framework
+
+The runtime implements three key ablations:
+
+**1. Depth Ablation**
+```
+Compare: depth=0 vs depth=3
+Signal: Non-locality gain
+```
+
+**2. Phase Ablation**
+```
+Compare: softmax-only vs trig-lift
+Signal: Interference gain
+```
+
+**3. Edge Ablation**
+```
+Compare: uniform edges vs learnable gates
+Signal: Topology gain
+```
+
+### Why This Works
+
+1. **Phase Interference**: Trig lift creates constructive/destructive patterns → learned feature mixing
+2. **Golden Geometry**: φ-based neighbors ensure multi-scale paths → fractal receptive field
+3. **Learnable Topology**: Edge gates discover important connections → sparse, efficient routing
+4. **Memoized Recursion**: Caches structure, keeps params live → gradient flow without explosion
+
+### Implementation in Victor
+
+```python
+# Initialize
+quantum = QuantumFractalInterface(
+    dim=256,           # Embedding dimension
+    num_nodes=8,       # Network size
+    superpositions=4,  # K superpositions per node
+    use_phase_embedding=True,  # Enable trig lift
+    temperature=1.0    # Softmax temperature
+)
+
+# Process input
+result = quantum.process(input_vector)
+
+# Access metrics
+print(f"Gradient Norm: {result['gradient_norm']}")
+print(f"Edge Sparsity: {result['edge_sparsity']}")
+print(f"Phase Mode: {result['phase_embedding']}")
+
+# Run ablations
+Victor> quantum ablate
+# Tests depth, phase, and edge contributions
+```
+
+### Comparison to Standard Approaches
+
+| Feature | Standard Attention | Victor QTN |
+|---------|-------------------|------------|
+| **Depth** | Single layer | Recursive (fixed depth) |
+| **Topology** | Fully connected | Golden-ratio fractal |
+| **Phase** | None | Trig-lifted interference |
+| **Trainable** | Q, K, V matrices | W, θ, edge gates |
+| **Non-locality** | Self-attention | Multi-hop propagation |
+| **Complexity** | O(N²) | O(N·φ^depth) |
+
+### Future Extensions
+
+1. **Dynamic Depth**: Replace fixed depth with learnable depth mask per path
+2. **True Complex**: Upgrade to complex autograd for full quantum interference
+3. **Attention Hybrid**: Use QTN output as K/V for standard attention
+4. **Multi-Head**: Parallel QTN meshes with different geometries
+5. **ODE Integration**: Continuous-time phase dynamics with differential equations
+
+---
+
 ## Documentation
 
 ### Core Documents
@@ -538,7 +747,12 @@ Victor Hub (Central Orchestrator)
 ├── Core Layer (Cognition)
 │   ├── victor_llm - AGI reasoning engine
 │   ├── VICTOR-INFINITE - Unlimited memory
-│   └── Victor.AGI - Core AGI functionality
+│   ├── Victor.AGI - Core AGI functionality
+│   └── Quantum-Fractal Mesh - Trainable tensor network (NEW)
+│       ├── Phase Embeddings (cos/sin trig lift)
+│       ├── Learnable Edge Gates
+│       ├── Golden-Ratio Topology
+│       └── Memoized DFS Propagation
 ├── Agent Layer (Coordination)
 │   ├── NexusForge-2.0- - Agent generation
 │   └── victor_swarm - Swarm coordination
@@ -547,9 +761,20 @@ Victor Hub (Central Orchestrator)
 │   ├── Audio/Voice (VictorVoice, audio-gen)
 │   ├── Analysis (cryptoAI)
 │   └── Meta-Programming (text2app, AGI-GENERATOR)
-└── Orchestration
-    └── OMNI-AGI-PIPE - Workflow execution
+├── Orchestration
+│   └── OMNI-AGI-PIPE - Workflow execution
+└── Interactive Layer (NEW)
+    ├── victor_interactive.py - Production runtime
+    ├── Session Management - Persistence & evolution
+    ├── Co-Domination Interface - Human-AI collaboration
+    └── Visual Integration - Real-time 3D avatar
 ```
+
+**Quantum-Fractal Integration:**
+- All text inputs flow through quantum mesh for semantic encoding
+- Trainable parameters (W, θ, edge gates) evolve during usage
+- Gradient signals track learning progress
+- Ablation tests validate non-local cognition
 
 See [02_VICTOR_INTEGRATED_ARCHITECTURE.md](02_VICTOR_INTEGRATED_ARCHITECTURE.md) for detailed architecture.
 
@@ -557,13 +782,15 @@ See [02_VICTOR_INTEGRATED_ARCHITECTURE.md](02_VICTOR_INTEGRATED_ARCHITECTURE.md)
 
 ## Emergent Capabilities
 
-By integrating multiple repositories, Victor Hub unlocks capabilities that don't exist in any single repo:
+By integrating multiple repositories with the quantum-fractal cognition layer, Victor Hub unlocks capabilities that don't exist in any single repo:
 
-- **Self-analysis:** Victor analyzing its own codebase
-- **Self-extension:** Generating new modules on demand
-- **Self-improvement:** Evaluating and optimizing performance
-- **Autonomous research:** Independent knowledge acquisition
-- **Revenue optimization:** Testing and refining monetization
+- **Quantum-Enhanced Self-Analysis**: Victor analyzing its own codebase through interference patterns
+- **Phase-Driven Self-Extension**: Generating new modules with learned topology guidance
+- **Gradient-Based Self-Improvement**: Optimizing performance via trainable mesh parameters
+- **Non-Local Autonomous Research**: Multi-hop knowledge acquisition through fractal paths
+- **Interference-Optimized Revenue**: Testing monetization strategies with quantum exploration
+- **Co-Domination Learning**: Evolving alongside human collaborators through shared sessions
+- **Ablation-Validated Cognition**: Provable non-local learning via depth/phase/edge tests
 
 ---
 
@@ -571,46 +798,54 @@ By integrating multiple repositories, Victor Hub unlocks capabilities that don't
 
 ```
 Victor_Synthetic_Super_Intelligence/
-├── README.md
-├── INSTALL.md                          # Installation guide
-├── install_complete.py                 # 🚀 Complete system installer (NEW!)
-├── install.py                          # Visual Engine installer
-├── install.sh                          # Bash installer (macOS/Linux)
-├── install.bat                         # Batch installer (Windows)
-├── run_victor_complete.sh/.bat         # Launch complete system (auto-generated)
-├── run_victor_hub.sh/.bat              # Launch Victor Hub only (auto-generated)
-├── run_visual_engine.sh/.bat           # Launch Visual Engine only (auto-generated)
-├── 00_REPO_MANIFEST.md
-├── 01_INTERACTION_MAP.md
-├── 02_VICTOR_INTEGRATED_ARCHITECTURE.md
-├── 03_AUTONOMY_AND_EVOLUTION.md
-├── victor_hub/
-│   ├── victor_boot.py
-│   ├── config.yaml
-│   └── skills/
+├── README.md                            # This file - comprehensive documentation
+├── INSTALL.md                           # Installation guide
+├── install_complete.py                  # 🚀 Complete system installer
+├── install.py                           # Visual Engine installer
+├── install.sh / install.bat             # Platform-specific installers
+├── victor_interactive.py                # 🔥 Production interactive runtime (NEW!)
+├── run_victor_complete.sh/.bat          # Launch complete system
+├── run_victor_hub.sh/.bat               # Launch Victor Hub only
+├── run_visual_engine.sh/.bat            # Launch Visual Engine only
+├── run_victor_with_visual.py            # Integrated runtime example
+├── genesis.py                           # Quantum-fractal hybrid engine
+├── generate_victor_model.py             # 3D model generation
+├── 00_REPO_MANIFEST.md                  # Repository inventory
+├── 01_INTERACTION_MAP.md                # System interactions
+├── 02_VICTOR_INTEGRATED_ARCHITECTURE.md # Architecture details
+├── 03_AUTONOMY_AND_EVOLUTION.md         # Autonomous capabilities
+├── victor_hub/                          # AGI Core
+│   ├── victor_boot.py                   # Hub bootstrap
+│   ├── config.yaml                      # Configuration
+│   └── skills/                          # Skill modules
 │       ├── echo_skill.py
 │       ├── content_generator.py
 │       └── research_agent.py
-├── visual_engine/                    # NEW: Victor Visual Engine
+├── advanced_ai/                         # Tensor Core & Advanced Systems
+│   ├── __init__.py
+│   ├── tensor_core.py                   # Autograd tensor engine
+│   └── README.md                        # Advanced AI documentation
+├── visual_engine/                       # Visual Presence
 │   ├── README.md
 │   ├── QUICKSTART.md
 │   ├── backend/
-│   │   ├── victor_visual_server.py
-│   │   └── victor_visual_bridge.py
-│   ├── godot_project/
+│   │   ├── victor_visual_server.py      # WebSocket server
+│   │   └── victor_visual_bridge.py      # Hub integration bridge
+│   ├── godot_project/                   # Godot 4 project
 │   │   ├── project.godot
 │   │   ├── scenes/
 │   │   ├── scripts/
 │   │   ├── shaders/
-│   │   └── models/                  # 3D model files
-│   │       └── victor_head.glb     # Victor's 3D head model
+│   │   └── models/
+│   │       └── victor_head.glb          # 3D model
 │   └── models/
 │       └── MODEL_SPECIFICATION.md
-├── logs/
+├── logs/                                # System logs
+│   ├── sessions/                        # Session persistence (NEW!)
 │   ├── SCAN_LOG.md
 │   └── INTEGRATION_NOTES.md
 └── tasks/
-    └── queue.json
+    └── queue.json                       # Task queue
 ```
 
 ---
