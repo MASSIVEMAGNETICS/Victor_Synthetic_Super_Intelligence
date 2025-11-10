@@ -82,3 +82,16 @@ safety:
     - "external_api_calls"
   audit_trail: true
   rollback_enabled: true
+
+visual_engine:
+  # Victor Visual Engine - Real-time 3D avatar interface
+  enabled: false  # Enable to activate visual presence
+  server:
+    host: "127.0.0.1"
+    port: 8765
+    auto_start: true  # Start WebSocket server with Victor Hub
+  demo_mode: false  # Run in demo mode (simulated updates)
+  default_emotion: "calm_focus"
+  default_energy: 0.5
+  godot_project_path: "visual_engine/godot_project"
+  auto_launch_godot: false  # Experimental: auto-launch Godot scene
