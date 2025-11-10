@@ -37,6 +37,7 @@ logs/*.log
 logs/tasks/*.json
 logs/performance/*.json
 logs/learning/*.json
+logs/sessions/*.json
 
 # OS
 .DS_Store
