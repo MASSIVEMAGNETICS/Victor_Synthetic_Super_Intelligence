@@ -57,7 +57,6 @@ class AdvancedNLPSkill(Skill):
             
         try:
             import spacy
-            from transformers import pipeline
             
             logger.info("Loading NLP models...")
             
@@ -71,13 +70,22 @@ class AdvancedNLPSkill(Skill):
                              check=True, capture_output=True)
                 self._spacy_model = spacy.load("en_core_web_sm")
             
-            # Load sentiment analysis model
-            self._sentiment_model = pipeline("sentiment-analysis", 
-                                           model="distilbert-base-uncased-finetuned-sst-2-english")
-            
-            # Load summarization model (using a smaller model for efficiency)
-            self._summarization_model = pipeline("summarization", 
-                                                model="facebook/bart-large-cnn")
+            # Try to load transformers models (optional for advanced features)
+            try:
+                from transformers import pipeline
+                
+                # Load sentiment analysis model
+                self._sentiment_model = pipeline("sentiment-analysis", 
+                                               model="distilbert-base-uncased-finetuned-sst-2-english")
+                
+                # Load summarization model (using a smaller model for efficiency)
+                self._summarization_model = pipeline("summarization", 
+                                                    model="facebook/bart-large-cnn")
+                logger.info("Transformer models loaded successfully")
+            except (ImportError, Exception) as e:
+                logger.warning(f"Transformers not available: {e}. Using spaCy-only features.")
+                self._sentiment_model = None
+                self._summarization_model = None
             
             self._models_loaded = True
             logger.info("NLP models loaded successfully")
@@ -167,6 +175,39 @@ class AdvancedNLPSkill(Skill):
     
     def _analyze_sentiment(self, text: str) -> Dict[str, Any]:
         """Analyze sentiment of text"""
+        
+        # Check if transformers model is available
+        if self._sentiment_model is None:
+            # Fallback: Use simple rule-based sentiment
+            doc = self._spacy_model(text)
+            
+            # Simple heuristic: count positive vs negative words
+            positive_words = {'good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 
+                            'love', 'best', 'perfect', 'awesome', 'brilliant', 'outstanding'}
+            negative_words = {'bad', 'terrible', 'awful', 'horrible', 'worst', 'hate', 
+                            'poor', 'disappointing', 'fail', 'failed', 'disaster'}
+            
+            pos_count = sum(1 for token in doc if token.text.lower() in positive_words)
+            neg_count = sum(1 for token in doc if token.text.lower() in negative_words)
+            
+            if pos_count > neg_count:
+                sentiment = "POSITIVE"
+                confidence = min(0.6 + (pos_count - neg_count) * 0.1, 0.95)
+            elif neg_count > pos_count:
+                sentiment = "NEGATIVE"
+                confidence = min(0.6 + (neg_count - pos_count) * 0.1, 0.95)
+            else:
+                sentiment = "NEUTRAL"
+                confidence = 0.5
+            
+            return {
+                "overall_sentiment": sentiment,
+                "confidence": confidence,
+                "sentence_sentiments": [],
+                "sentence_count": len(list(doc.sents)),
+                "method": "rule-based (transformers not available)"
+            }
+        
         # Use transformers for deep sentiment analysis
         result = self._sentiment_model(text[:512])[0]  # Limit to 512 tokens
         
@@ -185,7 +226,8 @@ class AdvancedNLPSkill(Skill):
             "overall_sentiment": result["label"],
             "confidence": result["score"],
             "sentence_sentiments": sentence_sentiments,
-            "sentence_count": len(sentence_sentiments)
+            "sentence_count": len(sentence_sentiments),
+            "method": "transformer-based"
         }
     
     def _summarize_text(self, text: str, inputs: Dict[str, Any]) -> Dict[str, Any]:
@@ -199,9 +241,29 @@ class AdvancedNLPSkill(Skill):
                 "summary": text,
                 "original_length": len(text.split()),
                 "summary_length": len(text.split()),
-                "compression_ratio": 1.0
+                "compression_ratio": 1.0,
+                "method": "text too short, no summarization needed"
             }
         
+        # Check if transformers model is available
+        if self._summarization_model is None:
+            # Fallback: Extract first few sentences as summary
+            doc = self._spacy_model(text)
+            sentences = list(doc.sents)
+            
+            # Take first 2-3 sentences
+            summary_sents = sentences[:min(3, len(sentences))]
+            summary = " ".join([sent.text for sent in summary_sents])
+            
+            return {
+                "summary": summary,
+                "original_length": len(text.split()),
+                "summary_length": len(summary.split()),
+                "compression_ratio": len(summary.split()) / len(text.split()),
+                "method": "extractive (transformers not available)"
+            }
+        
+        # Use transformers for abstractive summarization
         result = self._summarization_model(
             text,
             max_length=max_length,
@@ -215,7 +277,8 @@ class AdvancedNLPSkill(Skill):
             "summary": summary,
             "original_length": len(text.split()),
             "summary_length": len(summary.split()),
-            "compression_ratio": len(summary.split()) / len(text.split())
+            "compression_ratio": len(summary.split()) / len(text.split()),
+            "method": "abstractive (transformer-based)"
         }
     
     def _pos_tagging(self, text: str) -> Dict[str, Any]:

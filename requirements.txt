@@ -10,7 +10,10 @@ websockets>=11.0
 
 # Advanced NLP dependencies
 spacy>=3.7.0
-transformers>=4.48.0
-torch>=2.6.0
 sentencepiece>=0.2.0
 tokenizers>=0.19.0
+
+# Optional: Advanced NLP with transformers (for sentiment analysis and summarization)
+# Uncomment to enable transformer-based models (requires ~2GB disk space)
+# transformers>=4.48.0
+# torch>=2.6.0
