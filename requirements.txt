@@ -7,3 +7,10 @@ pyyaml>=6.0
 
 # Visual Engine dependencies
 websockets>=11.0
+
+# Advanced NLP dependencies
+spacy>=3.7.0
+transformers>=4.48.0
+torch>=2.6.0
+sentencepiece>=0.2.0
+tokenizers>=0.19.0
