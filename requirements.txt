@@ -2,6 +2,7 @@
 # Python 3.8+
 
 # Core dependencies
+numpy>=1.21.0
 pyyaml>=6.0
 
 # Visual Engine dependencies
