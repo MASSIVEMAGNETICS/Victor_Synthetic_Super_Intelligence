@@ -53,6 +53,32 @@ The Victor Synthetic Super Intelligence Hub is a production-grade integration sy
 
 ---
 
+## 📓 NEW: Interactive Colab Notebooks
+
+**Try Victor in your browser with zero installation!**
+
+We've created comprehensive Google Colab notebooks for hands-on learning:
+
+| Notebook | Description | Level | Duration |
+|----------|-------------|-------|----------|
+| [01. Quick Start](./notebooks/01_Victor_Quick_Start.ipynb) | Introduction to Victor's core components | Beginner | 20 min |
+| [02. Quantum-Fractal Cognition](./notebooks/02_Quantum_Fractal_Cognition.ipynb) | Deep dive into quantum mesh | Advanced | 30 min |
+| [03. Interactive Runtime](./notebooks/03_Interactive_Runtime.ipynb) | Production interface walkthrough | Intermediate | 25 min |
+| [04. Advanced AI Tensor Core](./notebooks/04_Advanced_AI_Tensor_Core.ipynb) | Gradient-based learning | Advanced | 30 min |
+| [05. NLP Integration](./notebooks/05_NLP_Integration.ipynb) | Natural language processing | Intermediate | 20 min |
+| [06. Genesis Engine](./notebooks/06_Genesis_Engine.ipynb) | Complete quantum-fractal system | Advanced | 25 min |
+| [07. Complete System Demo](./notebooks/07_Complete_System_Demo.ipynb) | End-to-end integration | All levels | 35 min |
+
+**🚀 [Start Learning Now →](./notebooks/README.md)**
+
+Each notebook includes:
+- ✅ Automatic dependency installation
+- ✅ Interactive code examples
+- ✅ Visualizations and explanations
+- ✅ No local setup required
+
+---
+
 ## Quick Start
 
 ### 🎯 RECOMMENDED: Production Interactive Runtime (NEW!)
