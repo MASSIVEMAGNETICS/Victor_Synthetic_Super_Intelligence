@@ -33,12 +33,22 @@ class CommandRouter:
         slots = intent_output.get("slots", {})
         task_type = INTENT_TASK_MAP.get(intent, "nlp")
 
+        # Extract text from user_context or slots
+        if user_context and "text" in user_context:
+            text = user_context["text"]
+        elif "quoted" in slots and slots["quoted"]:
+            text = " ".join(slots["quoted"]) if isinstance(slots["quoted"], list) else slots["quoted"]
+        elif "noun_chunks" in slots and slots["noun_chunks"]:
+            text = " ".join(slots["noun_chunks"]) if isinstance(slots["noun_chunks"], list) else slots["noun_chunks"]
+        else:
+            text = ""
+
         # Build Task
         task = Task(
             id=f"intent-{intent}",
             type=task_type,
             description=f"Auto-generated task for intent: {intent}",
-            inputs={"text": user_context.get("text") if user_context else slots.get("quoted") or slots.get("noun_chunks") or ""}
+            inputs={"text": text}
         )
 
         # If special 'command' intent, include slots so command skill can parse
