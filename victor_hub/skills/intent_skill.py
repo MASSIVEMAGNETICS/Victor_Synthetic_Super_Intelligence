@@ -5,6 +5,9 @@ Lightweight: uses transformers zero-shot (if available) + spaCy entity extractio
 Fallback: rule-based keyword mapper.
 """
 import logging
+import re
+import subprocess
+import sys
 from typing import Dict, Any, List, Optional
 
 # Integrate with VictorHub Skill/Task/Result patterns
@@ -45,8 +48,8 @@ class IntentSkill(Skill):
             try:
                 self._spacy = spacy.load("en_core_web_sm")
             except OSError:
-                import subprocess, sys
-                subprocess.run([sys.executable, "-m", "spacy", "download", "en_core_web_sm"], check=True)
+                subprocess.run([sys.executable, "-m", "spacy", "download", "en_core_web_sm"], 
+                             check=True, capture_output=True)
                 self._spacy = spacy.load("en_core_web_sm")
         except Exception as e:
             logger.warning(f"spaCy unavailable: {e}. Slot-filling will be degraded.")
@@ -132,7 +135,6 @@ class IntentSkill(Skill):
             slots["entities"] = []
             slots["noun_chunks"] = words[:6]
         # Try to extract quoted arguments: "..." or '...'
-        import re
         quotes = re.findall(r'["\'](.*?)["\']', text)
         if quotes:
             slots["quoted"] = quotes
