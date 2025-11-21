@@ -294,10 +294,12 @@ class VictorHub:
         
         from victor_hub.skills.content_generator import ContentGeneratorSkill
         from victor_hub.skills.echo_skill import EchoSkill
+        from victor_hub.skills.intent_skill import IntentSkill
         
         # Register built-in skills
         self.registry.register(EchoSkill())
         self.registry.register(ContentGeneratorSkill())
+        self.registry.register(IntentSkill())
         
         logger.info("Skill discovery complete")
     
