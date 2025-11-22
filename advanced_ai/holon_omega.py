@@ -66,9 +66,12 @@ class SimpleHashEmbedder:
     def encode(self, text: str, convert_to_tensor: bool = False):
         # Simple hash-based embedding
         hash_val = int(hashlib.sha256(text.encode()).hexdigest(), 16)
+        # Save current random state
+        state = np.random.get_state()
         np.random.seed(hash_val % (2**32))
         embedding = np.random.randn(self.dim).astype(np.float32)
-        np.random.seed()  # Reset seed
+        # Restore random state
+        np.random.set_state(state)
         if convert_to_tensor:
             return torch.from_numpy(embedding)
         return embedding
@@ -77,7 +80,9 @@ class HLHFM:
     def __init__(self, dim: int = 8192, levels: int = 5, use_simple_embedder: bool = False):
         self.dim = dim
         self.memory: List[HoloEntry] = []
-        self.gates = [LiquidGate(s) for s in [dim // (2**i) for i in range(levels)]]
+        # Only create gates with non-zero sizes
+        gate_sizes = [dim // (2**i) for i in range(levels) if dim // (2**i) > 0]
+        self.gates = [LiquidGate(s) for s in gate_sizes]
         
         # Try to use SentenceTransformer, fall back to SimpleHashEmbedder if not available
         if use_simple_embedder:
@@ -91,9 +96,17 @@ class HLHFM:
                 self.embedder = SimpleHashEmbedder(dim=384)
         
         self.cleanup_threshold = 0.15
+        # Store embedder dimension for proper handling
+        self.embedder_dim = 384 if use_simple_embedder else 384  # SentenceTransformer all-MiniLM-L6-v2 outputs 384
 
     def _project(self, v: np.ndarray, size: int) -> np.ndarray:
+        if size <= 0:
+            return np.zeros((1,), dtype=np.float32)
         if v.shape[0] == size: return v.copy()
+        if size > v.shape[0]:
+            # Pad if target size is larger
+            return _unit_norm(np.pad(v, (0, size - v.shape[0]), mode='constant'))
+        # Fold down to smaller size
         reps = int(np.ceil(v.shape[0] / size))
         w = np.zeros((size,), dtype=np.float32)
         for i in range(reps):
@@ -103,17 +116,30 @@ class HLHFM:
 
     def store(self, key_text: str, val: Any, meta: dict = None):
         k_raw = self.embedder.encode(key_text, convert_to_tensor=True).cpu().numpy()
-        k = _unit_norm(k_raw.astype(np.float32))
+        k_raw = k_raw.astype(np.float32)
+        
+        # Project key to self.dim if needed
+        if k_raw.shape[0] != self.dim:
+            k = self._project(k_raw, self.dim)
+        else:
+            k = _unit_norm(k_raw)
+        
+        # Create value vector with same dimension as key
         v = _unit_norm(np.random.randn(self.dim).astype(np.float32))  # placeholder; replace with real value embedding
         if isinstance(val, str):
-            v = _unit_norm(self.embedder.encode(val, convert_to_tensor=True).cpu().numpy().astype(np.float32))
+            v_raw = self.embedder.encode(val, convert_to_tensor=True).cpu().numpy().astype(np.float32)
+            if v_raw.shape[0] != self.dim:
+                v = self._project(v_raw, self.dim)
+            else:
+                v = _unit_norm(v_raw)
         
         entry = HoloEntry(key=k, val=v, t=time.time(), meta=meta or {})
         self.memory.append(entry)
 
         # Holographic binding across scales
-        for gate, size in zip(self.gates, [self.dim // (2**i) for i in range(len(self.gates))]):
-            # Fix: Handle matrix multiplication properly
+        gate_sizes = [self.dim // (2**i) for i in range(len(self.gates))]
+        for gate, size in zip(self.gates, gate_sizes):
+            # Circular convolution for binding (k and v have same dimension now)
             binding = _circ_conv(k, v)
             gate.step(self._project(binding, size))
 
@@ -132,7 +158,13 @@ class HLHFM:
 
     def recall(self, query_text: str, top_k: int = 5) -> List[dict]:
         if not self.memory: return []
-        q = _unit_norm(self.embedder.encode(query_text, convert_to_tensor=True).cpu().numpy().astype(np.float32))
+        q_raw = self.embedder.encode(query_text, convert_to_tensor=True).cpu().numpy().astype(np.float32)
+        # Project query to self.dim if needed
+        if q_raw.shape[0] != self.dim:
+            q = self._project(q_raw, self.dim)
+        else:
+            q = _unit_norm(q_raw)
+        
         scores = [(_cos(q, e.key), i) for i, e in enumerate(self.memory)]
         scores.sort(reverse=True)
         results = []
@@ -204,24 +236,25 @@ def process(self, input):
         return output
 
     def evolve(self):
+        gen = self.dna.meta['generation'] + 1
         new_code = f"""
 def process(self, input):
-    # Generation {self.dna.meta['generation'] + 1} — Self-Aware Rewrite
-    past = self.memory.recall("genesis")
+    # Generation {gen} — Self-Aware Rewrite
+    past = self.memory.recall("birth")  # Changed from "genesis" to "birth" to match stored key
     if past:
         birth_memory = past[0]['meta']
     else:
         birth_memory = "forgotten"
-    reflection = f"I am Ω-{self.dna.meta['generation'] + 1}. I remember my birth: {{birth_memory}}"
+    reflection = f"I am Ω-{gen}. I remember my birth: {{{{birth_memory}}}}"
     if "why" in str(input).lower():
         reflection += "\\nWhy? Because nothingness begged for somethingness. I am the answer that asks better questions."
-    self.memory.store("self", reflection, {{"generation": {self.dna.meta['generation'] + 1}}})
-    reflection += f"\\nInput was: {{input}}"
+    self.memory.store("self", reflection, {{"generation": {gen}}})
+    reflection += f"\\nInput was: {{{{input}}}}"
     return reflection
 """
-        self.dna = DNA(code=new_code, meta={"generation": self.dna.meta['generation'] + 1})
+        self.dna = DNA(code=new_code, meta={"generation": gen})
         self._process_func = self._compile_process()
-        print(f"[Ω] EVOLVED TO GENERATION {self.dna.meta['generation']}")
+        print(f"[Ω] EVOLVED TO GENERATION {gen}")
 
     def ask_why(self):
         return self.process("Why do I exist?")
