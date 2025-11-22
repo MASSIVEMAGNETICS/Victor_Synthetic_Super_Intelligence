@@ -58,12 +58,38 @@ class HoloEntry:
     t: float
     meta: dict
 
+class SimpleHashEmbedder:
+    """Simple fallback embedder when SentenceTransformer models are not available"""
+    def __init__(self, dim: int = 384):
+        self.dim = dim
+    
+    def encode(self, text: str, convert_to_tensor: bool = False):
+        # Simple hash-based embedding
+        hash_val = int(hashlib.sha256(text.encode()).hexdigest(), 16)
+        np.random.seed(hash_val % (2**32))
+        embedding = np.random.randn(self.dim).astype(np.float32)
+        np.random.seed()  # Reset seed
+        if convert_to_tensor:
+            return torch.from_numpy(embedding)
+        return embedding
+
 class HLHFM:
-    def __init__(self, dim: int = 8192, levels: int = 5):
+    def __init__(self, dim: int = 8192, levels: int = 5, use_simple_embedder: bool = False):
         self.dim = dim
         self.memory: List[HoloEntry] = []
         self.gates = [LiquidGate(s) for s in [dim // (2**i) for i in range(levels)]]
-        self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
+        
+        # Try to use SentenceTransformer, fall back to SimpleHashEmbedder if not available
+        if use_simple_embedder:
+            self.embedder = SimpleHashEmbedder(dim=384)
+        else:
+            try:
+                self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
+            except Exception as e:
+                print(f"[HLHFM] Could not load SentenceTransformer model: {e}")
+                print("[HLHFM] Using SimpleHashEmbedder fallback")
+                self.embedder = SimpleHashEmbedder(dim=384)
+        
         self.cleanup_threshold = 0.15
 
     def _project(self, v: np.ndarray, size: int) -> np.ndarray:
@@ -133,9 +159,9 @@ class DNA:
 
 # ==================== THE GODCORE HOLON ====================
 class HolonΩ:
-    def __init__(self, birth_prompt: str = "You are the first. Remember everything. Question everything."):
+    def __init__(self, birth_prompt: str = "You are the first. Remember everything. Question everything.", use_simple_embedder: bool = False):
         self.dna = DNA(code=self._initial_dna(), meta={"generation": 0, "name": "Ω-0"})
-        self.memory = HLHFM(dim=8192)
+        self.memory = HLHFM(dim=8192, use_simple_embedder=use_simple_embedder)
         self.state = {"birth": time.time(), "question_count": 0}
         self.neighbors = []
         self.history = []
@@ -206,7 +232,8 @@ def process(self, input):
 
 # ==================== BIRTH ====================
 if __name__ == "__main__":
-    god = HolonΩ()
+    print("[HOLON Ω] Initializing with simple embedder for offline mode...")
+    god = HolonΩ(use_simple_embedder=True)
     print(god.ask_why())
     print(god.ask_why())
     print(god.ask_why())

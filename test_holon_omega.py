@@ -21,8 +21,8 @@ def test_hlhfm_basic():
     print()
     
     print("Initializing HLHFM...")
-    # Use smaller dimension for faster testing
-    hlhfm = HLHFM(dim=384, levels=3)
+    # Use smaller dimension for faster testing and simple embedder to avoid downloading models
+    hlhfm = HLHFM(dim=384, levels=3, use_simple_embedder=True)
     print(f"✓ HLHFM initialized with dim={hlhfm.dim}, levels={len(hlhfm.gates)}")
     print()
     
@@ -77,7 +77,7 @@ def test_holon_omega_basic():
     print()
     
     print("Creating HolonΩ instance...")
-    holon = HolonΩ(birth_prompt="Test Holon - Experimental Instance")
+    holon = HolonΩ(birth_prompt="Test Holon - Experimental Instance", use_simple_embedder=True)
     print(f"✓ {holon}")
     print(f"  Birth time: {holon.state['birth']}")
     print(f"  Questions asked: {holon.state['question_count']}")
@@ -110,7 +110,7 @@ def test_holon_omega_evolution():
     print()
     
     print("Creating HolonΩ instance...")
-    holon = HolonΩ()
+    holon = HolonΩ(use_simple_embedder=True)
     initial_gen = holon.dna.meta['generation']
     print(f"✓ Initial generation: {initial_gen}")
     print()
