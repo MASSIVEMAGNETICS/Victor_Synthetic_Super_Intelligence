@@ -65,6 +65,10 @@ class Tensor:
             'bloodline_verified': True
         }
     
+    def _wrap_phase(self, phase: float) -> float:
+        """Wrap phase value to [0, 2π] range"""
+        return phase % (2 * np.pi)
+    
     def _combine_phase(self, *others, operation: str) -> float:
         """Combine phase values based on operation type.
         
@@ -79,21 +83,21 @@ class Tensor:
             for other in others:
                 if isinstance(other, Tensor):
                     phase += other.phase
-            return phase % (2 * np.pi)  # Keep in [0, 2π]
+            return self._wrap_phase(phase)
         elif operation == '*':
             # Multiplication: phases multiply
             phase = self.phase
             for other in others:
                 if isinstance(other, Tensor):
                     phase *= other.phase
-            return phase % (2 * np.pi)
+            return self._wrap_phase(phase)
         else:
             # Other operations: average
             phases = [self.phase]
             for other in others:
                 if isinstance(other, Tensor):
                     phases.append(other.phase)
-            return np.mean(phases) % (2 * np.pi)
+            return self._wrap_phase(np.mean(phases))
     
     def zero_grad(self):
         if self.requires_grad:

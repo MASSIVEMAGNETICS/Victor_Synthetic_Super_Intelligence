@@ -221,12 +221,18 @@ class MetaController:
     - Real-time streams → Liquid Attention Network (future)
     """
     
-    def __init__(self):
+    def __init__(self, default_mode: str = 'creative'):
+        """Initialize MetaController
+        
+        Args:
+            default_mode: Default routing mode when no clear match ('creative', 'logical', or 'realtime')
+        """
         self.routing_stats = {
             'logical': 0,
             'creative': 0,
             'realtime': 0
         }
+        self.default_mode = default_mode
     
     def route(self, input_data: Any) -> str:
         """Determine which processing mode to use"""
@@ -248,16 +254,21 @@ class MetaController:
         creative_score = sum(1 for kw in creative_keywords if kw in input_str)
         realtime_score = sum(1 for kw in realtime_keywords if kw in input_str)
         
-        # Route to highest score
+        # Route to highest score, with tie-breaking
         if logic_score > creative_score and logic_score > realtime_score:
             self.routing_stats['logical'] += 1
             return 'logical'
-        elif creative_score > realtime_score:
+        elif creative_score > logic_score and creative_score > realtime_score:
             self.routing_stats['creative'] += 1
             return 'creative'
-        else:
+        elif realtime_score > logic_score and realtime_score > creative_score:
             self.routing_stats['realtime'] += 1
-            return 'creative'  # Default to creative for now
+            return 'realtime'
+        else:
+            # No clear winner or all zeros - use configured default
+            mode = self.default_mode
+            self.routing_stats[mode] += 1
+            return mode
     
     def get_stats(self) -> Dict[str, int]:
         """Get routing statistics"""
@@ -360,13 +371,15 @@ class UnifiedCore:
                 'creative_depth': generation_result['creative_depth']
             }
         else:  # logical or realtime
-            # For now, use quantum-fractal but mark as logical processing
+            # For now, use quantum-fractal as fallback for logical processing
+            # TODO: Implement dedicated neurosymbolic engine for logical tasks
             generation_result = self.quantum_fractal.generate(input_data, context)
             output = generation_result['output']
             metadata = {
-                'brain': 'neurosymbolic',
+                'brain': 'quantum_fractal',  # Accurately report actual processing
                 'route': route,
-                'note': 'Using quantum-fractal as fallback for logical processing'
+                'intended_brain': 'neurosymbolic',  # What should handle this
+                'note': 'Using quantum-fractal as fallback - neurosymbolic not yet implemented'
             }
         
         # Phase 3.2: Verify output with Truth Filter
