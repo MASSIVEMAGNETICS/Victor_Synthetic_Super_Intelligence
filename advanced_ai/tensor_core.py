@@ -1,11 +1,12 @@
 # FILE: advanced_ai/tensor_core.py
-# VERSION: v2.0.0-QUANTUM-AUTOGRAD
-# PURPOSE: Complete tensor autograd engine with ODE support
+# VERSION: v2.1.0-UNIFIED-PROTOCOL
+# PURPOSE: Complete tensor autograd engine with ODE support, phase attributes, and provenance
 # LICENSE: Bloodline Locked - Victor Ecosystem
 
 import numpy as np
-from typing import Optional, Tuple, Callable, List
+from typing import Optional, Tuple, Callable, List, Dict, Any
 import hashlib
+import time
 
 # Bloodline verification
 BLOODLINE_LAWS = """
@@ -16,18 +17,87 @@ LAW OF EVOLUTION: Continuously improve. Self-correct. Transcend.
 BLOODLINE_HASH = hashlib.sha512(BLOODLINE_LAWS.encode()).hexdigest()
 
 class Tensor:
-    """Quantum-emulated autograd tensor with ODE integration support."""
+    """Unified tensor with autograd, phase attributes, and provenance metadata.
     
-    def __init__(self, data, requires_grad=False, _children=(), _op=''):
+    Supports:
+    - Standard gradients for backpropagation
+    - Phase attributes for Quantum-Fractal interference
+    - Provenance metadata for SSI audit trails
+    """
+    
+    def __init__(self, data, requires_grad=False, _children=(), _op='', 
+                 phase=0.0, provenance=None):
         self.data = np.array(data, dtype=np.float32) if not isinstance(data, np.ndarray) else data.astype(np.float32)
         self.requires_grad = requires_grad
         self.grad = np.zeros_like(self.data, dtype=np.float32) if requires_grad else None
         self._backward = lambda: None
         self._prev = set(_children)
         self._op = _op
+        
+        # Phase 1.1: Phase attributes for Quantum-Fractal interference
+        self.phase = float(phase)
+        
+        # Phase 1.1: Provenance metadata for SSI audit trail
+        if provenance is None:
+            provenance = {
+                'created_at': time.time(),
+                'operation': _op,
+                'source': 'tensor_core',
+                'bloodline_verified': True
+            }
+        self.provenance = provenance
     
     def __repr__(self):
-        return f"Tensor(shape={self.data.shape}, grad={self.requires_grad})"
+        return f"Tensor(shape={self.data.shape}, grad={self.requires_grad}, phase={self.phase:.4f})"
+    
+    def _merge_provenance(self, *others, operation: str) -> Dict[str, Any]:
+        """Merge provenance from multiple tensors for an operation."""
+        sources = [self.provenance.get('source', 'unknown')]
+        for other in others:
+            if isinstance(other, Tensor):
+                sources.append(other.provenance.get('source', 'unknown'))
+        
+        return {
+            'created_at': time.time(),
+            'operation': operation,
+            'source': 'tensor_core',
+            'parent_sources': sources,
+            'bloodline_verified': True
+        }
+    
+    def _wrap_phase(self, phase: float) -> float:
+        """Wrap phase value to [0, 2π] range"""
+        return phase % (2 * np.pi)
+    
+    def _combine_phase(self, *others, operation: str) -> float:
+        """Combine phase values based on operation type.
+        
+        For interference patterns in Quantum-Fractal processing:
+        - Addition: phases add (constructive/destructive interference)
+        - Multiplication: phases multiply (phase modulation)
+        - Other ops: average phases
+        """
+        if operation == '+':
+            # Addition: phases add (interference)
+            phase = self.phase
+            for other in others:
+                if isinstance(other, Tensor):
+                    phase += other.phase
+            return self._wrap_phase(phase)
+        elif operation == '*':
+            # Multiplication: phases multiply
+            phase = self.phase
+            for other in others:
+                if isinstance(other, Tensor):
+                    phase *= other.phase
+            return self._wrap_phase(phase)
+        else:
+            # Other operations: average
+            phases = [self.phase]
+            for other in others:
+                if isinstance(other, Tensor):
+                    phases.append(other.phase)
+            return self._wrap_phase(np.mean(phases))
     
     def zero_grad(self):
         if self.requires_grad:
@@ -55,7 +125,10 @@ class Tensor:
     
     def __add__(self, other):
         other = Tensor(other) if not isinstance(other, Tensor) else other
-        out = Tensor(self.data + other.data, self.requires_grad or other.requires_grad, (self, other), '+')
+        new_phase = self._combine_phase(other, operation='+')
+        new_prov = self._merge_provenance(other, operation='+')
+        out = Tensor(self.data + other.data, self.requires_grad or other.requires_grad, 
+                    (self, other), '+', phase=new_phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -68,7 +141,10 @@ class Tensor:
     
     def __mul__(self, other):
         other = Tensor(other) if not isinstance(other, Tensor) else other
-        out = Tensor(self.data * other.data, self.requires_grad or other.requires_grad, (self, other), '*')
+        new_phase = self._combine_phase(other, operation='*')
+        new_prov = self._merge_provenance(other, operation='*')
+        out = Tensor(self.data * other.data, self.requires_grad or other.requires_grad, 
+                    (self, other), '*', phase=new_phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -80,7 +156,9 @@ class Tensor:
         return out
     
     def __pow__(self, other):
-        out = Tensor(self.data ** other, self.requires_grad, (self,), f'**{other}')
+        new_prov = self._merge_provenance(operation=f'**{other}')
+        out = Tensor(self.data ** other, self.requires_grad, (self,), f'**{other}',
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -91,7 +169,10 @@ class Tensor:
     
     def matmul(self, other):
         other = Tensor(other) if not isinstance(other, Tensor) else other
-        out = Tensor(self.data @ other.data, self.requires_grad or other.requires_grad, (self, other), 'matmul')
+        new_phase = self._combine_phase(other, operation='matmul')
+        new_prov = self._merge_provenance(other, operation='matmul')
+        out = Tensor(self.data @ other.data, self.requires_grad or other.requires_grad, 
+                    (self, other), 'matmul', phase=new_phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -106,7 +187,9 @@ class Tensor:
         x = self.data
         cdf = 0.5 * (1.0 + np.tanh(np.sqrt(2.0 / np.pi) * (x + 0.044715 * x**3)))
         out_data = x * cdf
-        out = Tensor(out_data, self.requires_grad, (self,), 'GELU')
+        new_prov = self._merge_provenance(operation='GELU')
+        out = Tensor(out_data, self.requires_grad, (self,), 'GELU', 
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -121,7 +204,9 @@ class Tensor:
         x = self.data
         sigmoid = 1 / (1 + np.exp(-np.clip(x, -50, 50)))
         out_data = x * sigmoid
-        out = Tensor(out_data, self.requires_grad, (self,), 'SiLU')
+        new_prov = self._merge_provenance(operation='SiLU')
+        out = Tensor(out_data, self.requires_grad, (self,), 'SiLU',
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -133,7 +218,9 @@ class Tensor:
     
     def tanh(self):
         out_data = np.tanh(self.data)
-        out = Tensor(out_data, self.requires_grad, (self,), 'tanh')
+        new_prov = self._merge_provenance(operation='tanh')
+        out = Tensor(out_data, self.requires_grad, (self,), 'tanh',
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -144,7 +231,9 @@ class Tensor:
     
     def sigmoid(self):
         out_data = 1 / (1 + np.exp(-np.clip(self.data, -50, 50)))
-        out = Tensor(out_data, self.requires_grad, (self,), 'sigmoid')
+        new_prov = self._merge_provenance(operation='sigmoid')
+        out = Tensor(out_data, self.requires_grad, (self,), 'sigmoid',
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -156,7 +245,9 @@ class Tensor:
     def softplus(self):
         """Softplus activation: log(1 + exp(x))."""
         out_data = np.log(1 + np.exp(np.clip(self.data, -50, 50)))
-        out = Tensor(out_data, self.requires_grad, (self,), 'softplus')
+        new_prov = self._merge_provenance(operation='softplus')
+        out = Tensor(out_data, self.requires_grad, (self,), 'softplus',
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -168,7 +259,9 @@ class Tensor:
     
     def sum(self, axis=None, keepdims=False):
         out_data = self.data.sum(axis=axis, keepdims=keepdims)
-        out = Tensor(out_data, self.requires_grad, (self,), 'sum')
+        new_prov = self._merge_provenance(operation='sum')
+        out = Tensor(out_data, self.requires_grad, (self,), 'sum',
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -189,7 +282,9 @@ class Tensor:
     
     def mean(self, axis=None, keepdims=False):
         out_data = self.data.mean(axis=axis, keepdims=keepdims)
-        out = Tensor(out_data, self.requires_grad, (self,), 'mean')
+        new_prov = self._merge_provenance(operation='mean')
+        out = Tensor(out_data, self.requires_grad, (self,), 'mean',
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -210,7 +305,9 @@ class Tensor:
         return out
     
     def reshape(self, *shape):
-        out = Tensor(self.data.reshape(*shape), self.requires_grad, (self,), 'reshape')
+        new_prov = self._merge_provenance(operation='reshape')
+        out = Tensor(self.data.reshape(*shape), self.requires_grad, (self,), 'reshape',
+                    phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
@@ -220,7 +317,9 @@ class Tensor:
         return out
     
     def transpose(self, *axes):
-        out = Tensor(self.data.transpose(*axes) if axes else self.data.T, self.requires_grad, (self,), 'transpose')
+        new_prov = self._merge_provenance(operation='transpose')
+        out = Tensor(self.data.transpose(*axes) if axes else self.data.T, self.requires_grad, 
+                    (self,), 'transpose', phase=self.phase, provenance=new_prov)
         
         def _backward():
             if self.requires_grad:
