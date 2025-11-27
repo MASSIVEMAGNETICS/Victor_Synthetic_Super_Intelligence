@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from victor_hub.victor_boot import Skill, Task, Result
+from victor_hub.skills.utils import truncate_string
 
 
 class AGICouncilSkill(Skill):
@@ -70,7 +71,7 @@ class AGICouncilSkill(Skill):
             perspective = {
                 "member": member["id"],
                 "specialty": member["specialty"],
-                "opinion": f"[{member['specialty'].upper()}] Analysis of: {query[:30]}...",
+                "opinion": f"[{member['specialty'].upper()}] Analysis of: {truncate_string(query, 30)}",
                 "confidence": 0.7 + (hash(member["id"]) % 30) / 100,
                 "key_points": [
                     f"Point from {member['specialty']} perspective",
@@ -83,7 +84,7 @@ class AGICouncilSkill(Skill):
         synthesis = {
             "consensus_reached": True,
             "agreement_level": 0.82,
-            "unified_response": f"Council consensus on '{query[:40]}...'",
+            "unified_response": f"Council consensus on '{truncate_string(query, 40)}'",
             "key_insights": [
                 "Multi-perspective analysis completed",
                 "Cross-reasoning identified novel connections",
@@ -94,7 +95,7 @@ class AGICouncilSkill(Skill):
         
         return {
             "deliberation_complete": True,
-            "query": query[:100],
+            "query": truncate_string(query, 100),
             "perspectives": perspectives,
             "synthesis": synthesis,
             "recommendation": "Proceed with consensus view while monitoring dissenting concerns"
@@ -172,14 +173,14 @@ class AGICouncilSkill(Skill):
                     "members": [member1["id"], member2["id"]],
                     "specialties": [member1["specialty"], member2["specialty"]],
                     "intersection": f"Combining {member1['specialty']} with {member2['specialty']}",
-                    "novel_insight": f"Cross-domain insight on '{query[:20]}...'",
+                    "novel_insight": f"Cross-domain insight on '{truncate_string(query, 20)}'",
                     "confidence": 0.75
                 }
                 reasoning_chains.append(chain)
         
         return {
             "cross_reasoning_complete": True,
-            "query": query[:80],
+            "query": truncate_string(query, 100),
             "reasoning_chains": reasoning_chains[:5],  # Top 5 chains
             "total_chains_analyzed": len(reasoning_chains),
             "emergent_insights": [
@@ -194,7 +195,7 @@ class AGICouncilSkill(Skill):
         """Default council processing"""
         return {
             "processed": True,
-            "query_preview": query[:100],
+            "query_preview": truncate_string(query, 100),
             "council_ready": True,
             "available_operations": ["deliberate", "vote", "optimize", "cross_reason"],
             "status": "AGI Council ready for deliberation"

@@ -11,6 +11,7 @@ import math
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from victor_hub.victor_boot import Skill, Task, Result
+from victor_hub.skills.utils import truncate_string
 
 
 class FlowerOfLifeSkill(Skill):
@@ -113,7 +114,7 @@ class FlowerOfLifeSkill(Skill):
         
         return {
             "fol_processing_complete": True,
-            "input_preview": input_data[:80],
+            "input_preview": truncate_string(input_data, 100),
             "nodes_activated": len([n for n in processed_nodes if n["activation"] > 0.5]),
             "total_nodes": 37,
             "energy_distribution": {
@@ -152,7 +153,7 @@ class FlowerOfLifeSkill(Skill):
         
         return {
             "ripple_echo_complete": True,
-            "input": input_data[:60],
+            "input": truncate_string(input_data, 100),
             "iterations": 7,
             "ripple_pattern": ripple_iterations,
             "final_echo_strength": round(current_energy, 4),
@@ -183,7 +184,7 @@ class FlowerOfLifeSkill(Skill):
         
         return {
             "resonance_analysis": True,
-            "input_preview": input_data[:60],
+            "input_preview": truncate_string(input_data, 100),
             "base_frequency": self.resonance_frequency,
             "input_frequency_estimate": round(input_frequency, 2),
             "resonance_ratio": round(resonance_ratio, 4),
@@ -206,7 +207,7 @@ class FlowerOfLifeSkill(Skill):
         
         return {
             "harmonic_processing": True,
-            "input_preview": input_data[:60],
+            "input_preview": truncate_string(input_data, 100),
             "golden_ratio": round(golden_ratio, 6),
             "transformations": [
                 {**t, "result": round(t["result"], 2)} for t in transformations
@@ -240,7 +241,7 @@ class FlowerOfLifeSkill(Skill):
         
         return {
             "pattern_recognition": True,
-            "input_preview": input_data[:60],
+            "input_preview": truncate_string(input_data, 100),
             "patterns_detected": patterns_detected,
             "geometric_alignment": {
                 "vesica_piscis": 0.78,

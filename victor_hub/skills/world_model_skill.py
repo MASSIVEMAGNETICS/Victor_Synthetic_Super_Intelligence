@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from victor_hub.victor_boot import Skill, Task, Result
+from victor_hub.skills.utils import truncate_string
 
 
 class WorldModelHybridSkill(Skill):
@@ -82,13 +83,13 @@ class WorldModelHybridSkill(Skill):
         # Step 3: Hybrid synthesis
         return {
             "hybrid_reasoning_complete": True,
-            "query": query[:100] if len(query) > 100 else query,
+            "query": truncate_string(query, 100),
             "llm_component": llm_analysis,
             "world_model_component": world_reasoning,
             "synthesized_understanding": {
                 "confidence": 0.85,
                 "reasoning_path": "LLM -> World Model -> Synthesis",
-                "insight": f"Hybrid analysis of '{query[:30]}...' combines linguistic understanding with causal world model"
+                "insight": f"Hybrid analysis of '{truncate_string(query, 30)}' combines linguistic understanding with causal world model"
             },
             "advantages": [
                 "Superior causal reasoning over pure LLM",

@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from victor_hub.victor_boot import Skill, Task, Result
+from victor_hub.skills.utils import truncate_string
 
 
 class MusicVideoPipelineSkill(Skill):
@@ -84,7 +85,7 @@ class MusicVideoPipelineSkill(Skill):
         
         return {
             "generation_complete": True,
-            "audio_input": audio_input[:80] if len(audio_input) > 80 else audio_input,
+            "audio_input": truncate_string(audio_input, 100),
             "style": style,
             "pipeline_execution": {
                 "stages_completed": len(stages_completed),

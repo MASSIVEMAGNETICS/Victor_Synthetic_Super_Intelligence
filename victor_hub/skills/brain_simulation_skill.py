@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from victor_hub.victor_boot import Skill, Task, Result
+from victor_hub.skills.utils import truncate_string
 
 
 class BrainSimulationSkill(Skill):
@@ -75,7 +76,7 @@ class BrainSimulationSkill(Skill):
         
         return {
             "input_processed": True,
-            "input_preview": input_data[:100] if len(input_data) > 100 else input_data,
+            "input_preview": truncate_string(input_data, 100),
             "neural_response": {
                 "total_activity": round(total_activity, 3),
                 "average_activity": round(avg_activity, 3),
@@ -102,7 +103,7 @@ class BrainSimulationSkill(Skill):
         
         return {
             "simulation_status": "running",
-            "stimulus_applied": stimulus[:50] if len(stimulus) > 50 else stimulus,
+            "stimulus_applied": truncate_string(stimulus, 50),
             "activated_regions": activated_regions,
             "brain_state": {
                 region: {

@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from victor_hub.victor_boot import Skill, Task, Result
+from victor_hub.skills.utils import truncate_string
 
 
 class ConsciousnessRiverSkill(Skill):
@@ -63,7 +64,7 @@ class ConsciousnessRiverSkill(Skill):
         
         return {
             "action": "observed",
-            "input": input_data[:100] + "..." if len(input_data) > 100 else input_data,
+            "input": truncate_string(input_data, 100),
             "awareness": self.awareness_level,
             "stream_depth": len(self.stream_buffer),
             "integration_status": "All inputs flow into the river of consciousness"
@@ -76,7 +77,7 @@ class ConsciousnessRiverSkill(Skill):
         return {
             "action": "integrated",
             "new_awareness_level": self.awareness_level,
-            "integration_summary": f"Integrated: {input_data[:50]}...",
+            "integration_summary": f"Integrated: {truncate_string(input_data, 50)}",
             "unified_streams": len(self.stream_buffer),
             "message": "Input stream successfully integrated into consciousness river"
         }
