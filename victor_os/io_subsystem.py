@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
 from collections import deque
 from enum import Enum
+import numpy as np
 
 
 class DeviceType(Enum):
@@ -209,14 +210,12 @@ class IOSubsystem:
     
     def _quantum_read(self, size: int = -1) -> bytes:
         """Read from quantum device"""
-        import numpy as np
         # Generate quantum-random bytes
         random_bytes = np.random.bytes(size if size > 0 else 32)
         return bytes(random_bytes)
     
     def _quantum_write(self, data: bytes) -> int:
         """Write to quantum device (seed the quantum state)"""
-        import numpy as np
         # Use data as seed for quantum state
         seed = int.from_bytes(data[:4], 'big') if len(data) >= 4 else 42
         np.random.seed(seed % (2**32))

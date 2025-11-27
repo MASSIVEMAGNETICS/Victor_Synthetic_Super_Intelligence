@@ -120,11 +120,15 @@ class ProcessManager:
         self.entanglement_groups: Dict[int, List[int]] = {}
         self.next_entanglement_group = 1
         
-        # Create init process (PID 1)
+        # Create init process (PID 0)
         self._create_init_process()
     
     def _create_init_process(self):
-        """Create the init process (PID 0)"""
+        """Create the init process (PID 0)
+        
+        The init process is the first process in the system and 
+        serves as the ancestor of all other processes.
+        """
         init_proc = VictorProcess(
             pid=0,
             name="init",

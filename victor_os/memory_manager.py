@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 
-@dataclass 
+@dataclass
 class MemoryBlock:
     """A memory block in the fractal memory system
     

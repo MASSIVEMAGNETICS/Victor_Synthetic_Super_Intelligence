@@ -18,6 +18,7 @@ import time
 import traceback
 from typing import Dict, List, Any, Optional, Callable
 from collections import deque
+import numpy as np
 
 
 # Terminal colors
@@ -562,8 +563,6 @@ Type 'help' for available commands
     
     def cmd_qrand(self, args: List[str]) -> str:
         """Generate quantum random bytes"""
-        import numpy as np
-        
         n = int(args[0]) if args else 16
         random_bytes = np.random.bytes(n)
         

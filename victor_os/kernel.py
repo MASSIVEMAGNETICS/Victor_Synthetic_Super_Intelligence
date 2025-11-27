@@ -123,7 +123,9 @@ class VictorKernel:
         """Initialize the VictorOS kernel
         
         Args:
-            memory_size: Total memory available (in units)
+            memory_size: Total memory available in abstract memory units.
+                        Default is 1MB (1024*1024). These are logical units
+                        used by the fractal memory manager for allocation.
         """
         self.boot_time = time.time()
         self.state = KernelState.BOOTING
