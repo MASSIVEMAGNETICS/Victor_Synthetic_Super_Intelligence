@@ -60,14 +60,26 @@ class TemporalMemory:
 # Fractal Compression Layer
 #################################################################
 class FractalCompressor:
-    def __init__(self, dim=8):
+    def __init__(self, dim=8, sdr_size=None):
         self.dim = dim  # output octonion dimension
+        self._sdr_size = sdr_size
+        self._proj = None  # Lazy initialization of projection matrix
+        
+    def _get_projection(self, sdr_size):
+        """Get or create the projection matrix for the given SDR size."""
+        if self._proj is None or self._sdr_size != sdr_size:
+            # Initialize projection matrix once per unique SDR size
+            self._sdr_size = sdr_size
+            # Use fixed random state for reproducibility
+            rng = np.random.RandomState(42 + sdr_size)
+            self._proj = rng.normal(0, 1 / np.sqrt(sdr_size), (sdr_size, self.dim))
+        return self._proj
 
     def compress(self, sdr):
         # compress SDR → octonion via PCA-like random projection
         # Project SDR (size n) to 8 coefficients for octonion
         sdr_size = len(sdr)
-        proj = np.random.normal(0, 1 / np.sqrt(sdr_size), (sdr_size, self.dim))
+        proj = self._get_projection(sdr_size)
         coeffs = np.dot(sdr, proj)
         return Octonion(coeffs)
 
@@ -98,7 +110,7 @@ class OmegaTensorField:
 class VictorHolonNeocortex:
     def __init__(self, input_size=2048, layers=3):
         self.layers = [
-            SDRLayer(size=input_size // (2**i))
+            SDRLayer(size=max(1, input_size // (2**i)))
             for i in range(layers)
         ]
         self.tm = [
