@@ -52,14 +52,25 @@ class TemporalMemory:
 # Fractal Compression Layer
 #################################################################
 class FractalCompressor:
-    def __init__(self, dim=8):
+    def __init__(self, dim=8, seed=None):
         self.dim = dim  # output octonion dimension
+        self._proj_cache = {}  # cache projection matrices by input size
+        self._rng = np.random.default_rng(seed)  # deterministic RNG if seed provided
+
+    def _get_projection(self, sdr_size):
+        """Get or create projection matrix for given input size."""
+        if sdr_size not in self._proj_cache:
+            # Create and cache the projection matrix
+            self._proj_cache[sdr_size] = self._rng.normal(
+                0, 1 / np.sqrt(sdr_size), (sdr_size, self.dim)
+            )
+        return self._proj_cache[sdr_size]
 
     def compress(self, sdr):
         # compress SDR → octonion via PCA-like random projection
         # Project from sdr.size to 8 dimensions (octonion)
         sdr_size = len(sdr)
-        proj = np.random.normal(0, 1 / np.sqrt(sdr_size), (sdr_size, self.dim))
+        proj = self._get_projection(sdr_size)
         coeffs = np.dot(sdr, proj)
         return Octonion(coeffs)
 
