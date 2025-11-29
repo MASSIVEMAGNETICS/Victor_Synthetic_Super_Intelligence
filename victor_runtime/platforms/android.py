@@ -160,14 +160,16 @@ class AndroidAdapter(BasePlatformAdapter):
             Context = autoclass('android.content.Context')
             PackageManager = autoclass('android.content.pm.PackageManager')
             
-            android_permission = self.OPTIONAL_PERMISSIONS.get(
-                permission, 
-                f'android.permission.{permission.upper()}'
-            )
+            # Get the correct permission string
+            # OPTIONAL_PERMISSIONS values are just the permission name without prefix
+            if permission in self.OPTIONAL_PERMISSIONS:
+                # Values like 'SYSTEM_ALERT_WINDOW' need the full prefix
+                android_permission = f'android.permission.{self.OPTIONAL_PERMISSIONS[permission]}'
+            else:
+                # Direct permission name like 'INTERNET'
+                android_permission = f'android.permission.{permission.upper()}'
             
-            result = self._context.checkSelfPermission(
-                f'android.permission.{android_permission}'
-            )
+            result = self._context.checkSelfPermission(android_permission)
             
             return result == PackageManager.PERMISSION_GRANTED
             
@@ -181,18 +183,11 @@ class AndroidAdapter(BasePlatformAdapter):
             return False
         
         try:
-            from jnius import autoclass
-            
-            android_permission = self.OPTIONAL_PERMISSIONS.get(
-                permission,
-                f'android.permission.{permission.upper()}'
-            )
-            
             # Special handling for overlay permission
             if permission == 'overlay':
                 return await self._request_overlay_permission()
             
-            # Request through activity
+            # For other permissions, request through activity
             # ActivityCompat.requestPermissions(activity, [permission], requestCode)
             
             # For now, check if already granted

@@ -84,50 +84,98 @@ class SyncManager:
         self._initialize_encryption()
     
     def _initialize_encryption(self):
-        """Initialize encryption key"""
-        # Key derived from user_id and device-specific entropy
+        """Initialize encryption key using proper key derivation"""
         if self.runtime and self.runtime.user_id:
-            # In production, use a proper key derivation function (PBKDF2, Argon2)
-            key_material = f"{self.runtime.user_id}-sync-key-{os.urandom(16).hex()}"
-            self._encryption_key = hashlib.sha256(key_material.encode()).digest()
+            # Use PBKDF2 for proper key derivation
+            # The salt is derived from user_id to ensure consistency across sessions
+            salt = hashlib.sha256(f"{self.runtime.user_id}-salt".encode()).digest()[:16]
+            
+            # Derive key using PBKDF2-HMAC-SHA256 with 100,000 iterations
+            self._encryption_key = hashlib.pbkdf2_hmac(
+                'sha256',
+                self.runtime.user_id.encode(),
+                salt,
+                100000,  # NIST recommended minimum
+                dklen=32  # 256-bit key
+            )
     
     def _encrypt_data(self, data: Dict) -> str:
         """
-        Encrypt data for sync.
+        Encrypt data for sync using AES-GCM.
         
-        In production, use a proper encryption library like cryptography.Fernet.
-        This is a simplified placeholder.
+        Uses authenticated encryption with associated data (AEAD) for
+        confidentiality and integrity.
         """
         if not self._encryption_key:
             raise ValueError("Encryption key not initialized")
         
         # Convert to JSON
-        json_data = json.dumps(data, sort_keys=True)
+        json_data = json.dumps(data, sort_keys=True).encode()
         
-        # Simple XOR encryption (PLACEHOLDER - use real encryption in production)
-        # In production: Use Fernet or AES-GCM
-        encrypted = bytearray()
-        key_len = len(self._encryption_key)
-        for i, char in enumerate(json_data.encode()):
-            encrypted.append(char ^ self._encryption_key[i % key_len])
-        
-        return base64.b64encode(bytes(encrypted)).decode()
+        try:
+            # Try to use cryptography library for AES-GCM
+            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+            
+            # Generate a random 96-bit nonce (recommended for GCM)
+            nonce = os.urandom(12)
+            
+            # Encrypt with AES-GCM (provides both encryption and authentication)
+            aesgcm = AESGCM(self._encryption_key)
+            ciphertext = aesgcm.encrypt(nonce, json_data, None)
+            
+            # Prepend nonce to ciphertext
+            return base64.b64encode(nonce + ciphertext).decode()
+            
+        except ImportError:
+            # Fallback: Use Fernet if cryptography is installed differently
+            try:
+                from cryptography.fernet import Fernet
+                
+                # Derive a Fernet key from our key
+                fernet_key = base64.urlsafe_b64encode(self._encryption_key)
+                f = Fernet(fernet_key)
+                return f.encrypt(json_data).decode()
+                
+            except ImportError:
+                # Last resort: warn and don't encrypt (sync disabled)
+                logger.warning("No encryption library available - sync encryption disabled")
+                logger.warning("Install 'cryptography' package for secure sync")
+                return base64.b64encode(json_data).decode()
     
     def _decrypt_data(self, encrypted: str) -> Dict:
-        """Decrypt sync data"""
+        """Decrypt sync data using AES-GCM"""
         if not self._encryption_key:
             raise ValueError("Encryption key not initialized")
         
         # Decode base64
         data = base64.b64decode(encrypted)
         
-        # Simple XOR decryption (PLACEHOLDER)
-        decrypted = bytearray()
-        key_len = len(self._encryption_key)
-        for i, byte in enumerate(data):
-            decrypted.append(byte ^ self._encryption_key[i % key_len])
-        
-        return json.loads(decrypted.decode())
+        try:
+            # Try to use cryptography library for AES-GCM
+            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+            
+            # Extract nonce (first 12 bytes) and ciphertext
+            nonce = data[:12]
+            ciphertext = data[12:]
+            
+            # Decrypt with AES-GCM
+            aesgcm = AESGCM(self._encryption_key)
+            plaintext = aesgcm.decrypt(nonce, ciphertext, None)
+            
+            return json.loads(plaintext.decode())
+            
+        except ImportError:
+            try:
+                from cryptography.fernet import Fernet
+                
+                fernet_key = base64.urlsafe_b64encode(self._encryption_key)
+                f = Fernet(fernet_key)
+                plaintext = f.decrypt(data)
+                return json.loads(plaintext.decode())
+                
+            except ImportError:
+                # Fallback: assume unencrypted
+                return json.loads(data.decode())
     
     async def run(self):
         """Run sync loop"""

@@ -419,30 +419,73 @@ class MeshClient:
             raise ConnectionError(f"Failed to send to {peer.device_name}: {e}")
     
     def _encrypt(self, data: str) -> str:
-        """Encrypt data for transmission"""
+        """Encrypt data for transmission using AES-GCM"""
         if not self._encryption_key:
             return data
         
-        # Placeholder - use proper encryption in production
         import base64
-        encrypted = bytearray()
-        key_len = len(self._encryption_key)
-        for i, char in enumerate(data.encode()):
-            encrypted.append(char ^ self._encryption_key[i % key_len])
-        return base64.b64encode(bytes(encrypted)).decode()
+        import os
+        
+        try:
+            # Use AES-GCM for authenticated encryption
+            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+            
+            # Generate random nonce
+            nonce = os.urandom(12)
+            
+            # Encrypt with AES-GCM
+            aesgcm = AESGCM(self._encryption_key[:32])  # Use first 32 bytes for 256-bit key
+            ciphertext = aesgcm.encrypt(nonce, data.encode(), None)
+            
+            # Prepend nonce to ciphertext
+            return base64.b64encode(nonce + ciphertext).decode()
+            
+        except ImportError:
+            try:
+                # Fallback to Fernet
+                from cryptography.fernet import Fernet
+                
+                fernet_key = base64.urlsafe_b64encode(self._encryption_key[:32])
+                f = Fernet(fernet_key)
+                return f.encrypt(data.encode()).decode()
+                
+            except ImportError:
+                logger.warning("No encryption library available - sending unencrypted")
+                return base64.b64encode(data.encode()).decode()
     
     def _decrypt(self, data: str) -> str:
-        """Decrypt received data"""
+        """Decrypt received data using AES-GCM"""
         if not self._encryption_key:
             return data
         
         import base64
-        decoded = base64.b64decode(data)
-        decrypted = bytearray()
-        key_len = len(self._encryption_key)
-        for i, byte in enumerate(decoded):
-            decrypted.append(byte ^ self._encryption_key[i % key_len])
-        return decrypted.decode()
+        
+        try:
+            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+            
+            decoded = base64.b64decode(data)
+            
+            # Extract nonce and ciphertext
+            nonce = decoded[:12]
+            ciphertext = decoded[12:]
+            
+            # Decrypt with AES-GCM
+            aesgcm = AESGCM(self._encryption_key[:32])
+            plaintext = aesgcm.decrypt(nonce, ciphertext, None)
+            
+            return plaintext.decode()
+            
+        except ImportError:
+            try:
+                from cryptography.fernet import Fernet
+                
+                fernet_key = base64.urlsafe_b64encode(self._encryption_key[:32])
+                f = Fernet(fernet_key)
+                return f.decrypt(base64.b64decode(data)).decode()
+                
+            except ImportError:
+                # Fallback: assume base64 encoded plaintext
+                return base64.b64decode(data).decode()
     
     # ========================
     # Peer Management
