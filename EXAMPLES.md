@@ -1,8 +1,37 @@
 # Victor Interactive Runtime - Quick Examples
 
-## Getting Started
+## 🚀 Getting Started
 
-Launch Victor:
+### Run the Full Demo (Recommended for First-Time Users)
+
+Experience all Victor systems at once with the comprehensive demo:
+
+```bash
+# Run the complete demonstration
+python full_demo.py
+
+# Run with interactive prompts
+python full_demo.py --interactive
+
+# Run with verbose debugging
+python full_demo.py --verbose
+
+# Output results as JSON
+python full_demo.py --json
+```
+
+**The demo covers:**
+- ✅ Tensor Core (autograd engine)
+- ✅ Genesis Engine (quantum-fractal cognition)
+- ✅ Victor Hub (skill routing)
+- ✅ NLP Integration (language processing)
+- ✅ Advanced AI (neural systems)
+- ✅ Unified System (complete pipeline)
+
+---
+
+### Launch Interactive Runtime
+
 ```bash
 # Linux/Mac
 ./launch_victor.sh

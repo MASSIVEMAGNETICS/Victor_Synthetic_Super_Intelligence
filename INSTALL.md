@@ -1,10 +1,68 @@
-# Victor Visual Engine - One-Click Installation
+# Victor Synthetic Super Intelligence - Installation Guide
 
-**Quick Start:** Choose your platform and run the installer!
+**Quick Start:** Choose your installation method based on what you need!
 
 ---
 
-## 🚀 Installation Methods
+## 📋 Table of Contents
+
+- [Complete System Installation (Recommended)](#-complete-system-installation-recommended)
+- [Quick Verification](#-quick-verification)
+- [Visual Engine Installation](#-visual-engine-installation)
+- [Prerequisites](#-prerequisites)
+- [Troubleshooting](#-troubleshooting)
+
+---
+
+## 🚀 Complete System Installation (Recommended)
+
+For the **full Victor experience**, use the complete installer:
+
+```bash
+# Install everything
+python install_complete.py
+
+# Then verify with the demo
+python full_demo.py
+```
+
+**What gets installed:**
+- ✅ All Python dependencies (numpy, pyyaml, websockets)
+- ✅ Victor Hub (AGI Core)
+- ✅ Genesis Engine (Quantum-Fractal Cognition)
+- ✅ Advanced AI (Tensor Core, Holon Omega)
+- ✅ Visual Engine Backend
+- ✅ Directory structure and launch scripts
+
+**Installation time:** ~30-60 seconds
+
+---
+
+## ✅ Quick Verification
+
+After installation, verify everything works:
+
+```bash
+# Run the complete demonstration
+python full_demo.py
+
+# Expected output:
+# ✓ Tensor Core: success
+# ✓ Genesis Engine: success
+# ✓ Victor Hub: success
+# ✓ NLP Integration: success
+# ✓ Advanced AI: success
+# ✓ Unified System: success
+# 🎉 All demos completed successfully!
+```
+
+If all tests pass, Victor is ready!
+
+---
+
+## 🎨 Visual Engine Installation
+
+For just the 3D visual interface:
 
 ### Option 1: Universal Python Installer (Recommended)
 Works on **Windows, macOS, and Linux**
