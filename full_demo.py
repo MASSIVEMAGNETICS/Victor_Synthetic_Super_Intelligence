@@ -32,6 +32,17 @@ sys.path.insert(0, str(Path(__file__).parent))
 import numpy as np
 
 # =============================================================================
+# CONSTANTS
+# =============================================================================
+# Common English stopwords for basic NLP when spaCy is not available
+COMMON_STOPWORDS = {
+    'the', 'a', 'an', 'is', 'are', 'was', 'were', 'in', 'on', 'at',
+    'to', 'for', 'with', 'and', 'or', 'it', 'by', 'as', 'of', 'this',
+    'that', 'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
+    'would', 'could', 'should', 'can', 'may', 'might', 'must', 'shall'
+}
+
+# =============================================================================
 # TERMINAL COLORS
 # =============================================================================
 class Colors:
@@ -232,9 +243,14 @@ def demo_genesis_engine(verbose: bool = False) -> Dict[str, Any]:
         # Test 4: Multiple quantum propagations
         print("\n⚡ Test 4: Multiple Quantum Propagations")
         outputs = []
+        # Get base nodes (exclude fractal depth extensions)
+        base_node_ids = [n for n in mesh.nodes if '_d' not in n]
+        base_node_count = len(base_node_ids)
+        
         for i in range(5):
             inp = np.random.randn(3)
-            out = mesh.forward_propagate(inp, f"node_{i % len([n for n in mesh.nodes if not '_d' in n])}")
+            node_index = i % base_node_count
+            out = mesh.forward_propagate(inp, f"node_{node_index}")
             outputs.append(float(np.mean(out)))
         
         print(f"   5 propagations completed")
@@ -411,12 +427,10 @@ def demo_nlp_integration(verbose: bool = False) -> Dict[str, Any]:
             results["tests"].append({"name": "keywords", "status": "passed"})
         else:
             print("\n📝 Test 2-4: Basic NLP (spaCy not available)")
-            # Basic keyword extraction without spaCy
+            # Basic keyword extraction without spaCy using module-level stopwords
             words = sample_text.lower().split()
-            common_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'in', 'on', 'at', 
-                          'to', 'for', 'with', 'and', 'or', 'it', 'by', 'as', 'of'}
-            keywords = [w.strip('.,!?') for w in words if w.strip('.,!?') not in common_words 
-                       and len(w) > 3]
+            keywords = [w.strip('.,!?') for w in words 
+                       if w.strip('.,!?') not in COMMON_STOPWORDS and len(w) > 3]
             unique_keywords = list(set(keywords))[:10]
             print(f"   Basic keywords: {', '.join(unique_keywords)}")
             results["tests"].append({"name": "basic_nlp", "status": "passed"})
@@ -590,7 +604,9 @@ def demo_interactive_runtime(verbose: bool = False) -> Dict[str, Any]:
         # Step 2: Quantum-fractal processing
         quantum_output = mesh.forward_propagate(embedding, "node_0")
         
-        # Step 3: Update cognitive river (using valid stream names from CognitiveRiver.STREAMS)
+        # Step 3: Update cognitive river
+        # Note: Stream names must be from CognitiveRiver.STREAMS: 
+        # ["status", "emotion", "memory", "awareness", "systems", "user", "sensory", "realworld"]
         river.set("user", {"query": user_input}, boost=1.5)
         river.set("awareness", {"quantum_output": float(np.mean(quantum_output))}, boost=1.0)
         merged = river.merge()
@@ -608,10 +624,11 @@ def demo_interactive_runtime(verbose: bool = False) -> Dict[str, Any]:
         print(f"   Selected stream: {merged['merged']}")
         results["tests"].append({"name": "full_pipeline", "status": "passed"})
         
-        # Test 2: Multi-modal fusion (using valid stream names)
+        # Test 2: Multi-modal fusion
         print("\n🔀 Test 2: Multi-Modal Fusion")
         
-        # Simulate multiple input modalities using valid stream names
+        # Simulate multiple input modalities
+        # Using valid CognitiveRiver stream names: sensory, emotion, memory, awareness
         modalities = {
             "sensory": np.random.randn(8),
             "emotion": np.array([0.8, 0.2, 0.1]),  # Joy, neutral, sad
