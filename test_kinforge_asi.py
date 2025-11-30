@@ -7,8 +7,11 @@ Tests all components of the KinForge ASI prototype
 import sys
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Add project root to path for test discovery
+# This ensures the test works regardless of how it's invoked
+project_root = Path(__file__).parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 
 def test_loyalty_proof():

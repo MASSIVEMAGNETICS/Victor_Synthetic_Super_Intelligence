@@ -122,8 +122,7 @@ __all__ = [
     "SovereigntyAuditor",
     "AutomatedAuditor",
     
-    # KinForge ASI (access via ssi_framework.kinforge_asi)
-    "kinforge_asi",
+    # Note: KinForge ASI available via ssi_framework.kinforge_asi submodule
 ]
 
 def get_framework_info():
