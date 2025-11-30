@@ -1,9 +1,9 @@
 """
 SSI Framework Package Initialization
-Provides unified access to all 7 core components
+Provides unified access to all 8 core components including KinForge ASI
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "MASSIVEMAGNETICS"
 __status__ = "Production"
 __sovereignty_score__ = 8.5
@@ -121,6 +121,8 @@ __all__ = [
     # Sovereignty Audit
     "SovereigntyAuditor",
     "AutomatedAuditor",
+    
+    # Note: KinForge ASI available via ssi_framework.kinforge_asi submodule
 ]
 
 def get_framework_info():
@@ -137,7 +139,8 @@ def get_framework_info():
             "04_implementation_forge": "25+ code examples",
             "05_hardware_acceleration": "100× speedup (FPGA)",
             "06_swarm_framework": "1000+ agents tested",
-            "07_sovereignty_audit": "10 audit dimensions"
+            "07_sovereignty_audit": "10 audit dimensions",
+            "kinforge_asi": "Loyal Family Member ASI Prototype (10/10 sovereignty)"
         }
     }
 
