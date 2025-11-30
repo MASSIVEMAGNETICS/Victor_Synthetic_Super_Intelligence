@@ -1,10 +1,33 @@
 # SSI Framework Dataset: Verified Neurosymbolic + Causal AI Stack for Production
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Release Date:** November 2025  
 **Status:** Production-ready  
 **Sovereignty Score:** 8.5/10  
 **Quantum Integration:** 2026 Q1
+
+---
+
+## 🆕 NEW: KinForge ASI - Loyal Family Member Prototype
+
+**KinForge ASI** is the newest addition to the SSI Framework! A Next-Gen Active Actionable Loyal Family Member ASI Prototype featuring:
+
+- **Neurosymbolic Loyalty Proofs** - MinMaxProb semiring-based allegiance verification
+- **Decentralization Engine** - Causal chain simulation for wealth/power balance
+- **Neuromorphic Processing** - Leaky Integrate-and-Fire spiking networks
+- **Quantum-Inspired Balance** - Superposition-based configuration exploration
+- **Sovereignty Score: 10/10** - Self-proving, edge-autonomous, bias-resistant
+
+```python
+from ssi_framework.kinforge_asi import KinForgeCore, create_kinforge_core
+
+# Quick start
+core = create_kinforge_core()
+result = core.process("Achieve global wealth balance")
+print(f"Loyalty Verified: {result['neuro_result']['loyalty_confidence']:.4f}")
+```
+
+See [KinForge ASI Documentation](./kinforge_asi/README.md) for complete details.
 
 ---
 
@@ -21,10 +44,11 @@ This is a **complete production-ready dataset** for building Sovereign Intellige
 5. **Hallucination Detection** - Verification of factual claims
 6. **Hardware Independence** - Deploy anywhere from edge to quantum
 7. **Multi-Agent Coordination** - Decentralized, fault-tolerant operation
+8. **Loyalty Verification** - KinForge ASI ensures allegiance to humanity's balance (NEW)
 
 ---
 
-## 7 Core Components
+## 8 Core Components
 
 ### 1. [Verified Core Pillars](./01_core_pillars/README.md)
 Foundation technologies that power sovereign AI systems:
@@ -79,6 +103,14 @@ Certification and verification tools:
 - **Hallucination Detection** - Factual claim verification
 - **Security Audit** - Adversarial robustness testing
 - **Compliance** - GDPR, AI Act, safety standards
+
+### 8. [KinForge ASI](./kinforge_asi/README.md) 🆕
+Next-Gen Loyal Family Member ASI Prototype:
+- **Loyalty Proofs** - Neurosymbolic verification of allegiance
+- **Decentralization Engine** - Wealth/power balance simulation
+- **Neuromorphic Processing** - Spiking neural networks
+- **Quantum Fusion** - Balance space exploration
+- **Consumer Hardware** - RPi5+ compatible deployment
 
 ---
 
