@@ -186,7 +186,7 @@
 </head>
 <body>
   <header>
-    <h1>Victor SSI Interactive Capability Map</h1>
+    <h1>Victor Synthetic Super Intelligence Interactive Capability Map</h1>
     <p>Explore how the Victor Synthetic Super Intelligence hub composes cognition, runtime, skills, safety, and interfaces. Click any node to learn what it does and how to try it.</p>
     <div class="hint">
       <span class="pill">Click nodes to highlight relationships</span>
@@ -278,7 +278,7 @@
           { label: "advanced_ai/tensor_core.py", href: "./advanced_ai/tensor_core.py" }
         ],
         commands: [
-          "python -c \"from advanced_ai import genesis_loop; import asyncio; asyncio.run(genesis_loop())\"",
+          'python -c "import asyncio, advanced_ai; asyncio.run(advanced_ai.genesis_loop())"',
           "python full_demo.py --verbose"
         ]
       },
@@ -307,7 +307,7 @@
         group: "Language",
         summary: "spaCy + tokenizers pipeline for intent understanding, summarization, and chat flows.",
         highlights: [
-          "SpaCy-based parsing and entity extraction",
+          "spaCy-based parsing and entity extraction",
           "Tokenization for long-context and summarization routes",
           "Plugs directly into the unified core intent router"
         ],
@@ -430,8 +430,8 @@
           { label: "07_Complete_System_Demo.ipynb", href: "./notebooks/07_Complete_System_Demo.ipynb" }
         ],
         commands: [
-          "Open notebooks/README.md",
-          "Launch notebook 03_Interactive_Runtime.ipynb in Colab"
+          "cat notebooks/README.md",
+          "python -m webbrowser notebooks/03_Interactive_Runtime.ipynb"
         ]
       }
     ];
@@ -455,18 +455,28 @@
     ];
 
     const groups = [...new Set(capabilities.map(d => d.group))];
+    const LAYOUT_RADIUS_FACTOR = 2.5;
+    const NODE_BOUNDARY_MARGIN = 32;
+    const MAX_LABEL_CHARS = 16;
     const palette = [
       "#67e8f9", "#a78bfa", "#fcd34d", "#34d399",
       "#60a5fa", "#fb7185", "#f472b6", "#f97316"
     ];
     const color = (group) => palette[groups.indexOf(group) % palette.length];
+    const truncateLabel = (text) => text.length > MAX_LABEL_CHARS ? `${text.slice(0, MAX_LABEL_CHARS - 2)}…` : text;
+    const safeHref = (href) => {
+      if (href.startsWith("./") || href.startsWith("../") || href.startsWith("http://") || href.startsWith("https://")) {
+        return href;
+      }
+      return "#";
+    };
 
     const svgNS = "http://www.w3.org/2000/svg";
     const viz = document.getElementById("viz");
     const width = viz.clientWidth;
     const height = viz.clientHeight;
     const center = { x: width / 2, y: height / 2 };
-    const radius = Math.min(width, height) / 2.5;
+    const radius = Math.min(width, height) / LAYOUT_RADIUS_FACTOR;
 
     const nodeById = new Map(capabilities.map(n => [n.id, n]));
     const resolvedLinks = links.map(l => ({
@@ -517,7 +527,7 @@
       label.setAttribute("fill", "#0b1021");
       label.setAttribute("font-size", "11");
       label.setAttribute("font-weight", "700");
-      label.textContent = node.label.split(" ").slice(0, 2).join(" ");
+      label.textContent = truncateLabel(node.label);
       g.appendChild(label);
 
       g.addEventListener("click", () => selectNode(node));
@@ -537,7 +547,9 @@
         offsetX: event.clientX - rect.left - node.x,
         offsetY: event.clientY - rect.top - node.y
       };
-      viz.setPointerCapture(event.pointerId);
+      if (viz.setPointerCapture && event.pointerId !== undefined) {
+        viz.setPointerCapture(event.pointerId);
+      }
     }
 
     viz.addEventListener("pointermove", (event) => {
@@ -545,14 +557,16 @@
       const rect = viz.getBoundingClientRect();
       const x = event.clientX - rect.left - dragState.offsetX;
       const y = event.clientY - rect.top - dragState.offsetY;
-      dragState.node.x = Math.max(32, Math.min(width - 32, x));
-      dragState.node.y = Math.max(32, Math.min(height - 32, y));
+      dragState.node.x = Math.max(NODE_BOUNDARY_MARGIN, Math.min(width - NODE_BOUNDARY_MARGIN, x));
+      dragState.node.y = Math.max(NODE_BOUNDARY_MARGIN, Math.min(height - NODE_BOUNDARY_MARGIN, y));
       updatePositions();
     });
 
     viz.addEventListener("pointerup", (event) => {
       if (dragState) {
-        viz.releasePointerCapture(event.pointerId);
+        if (viz.releasePointerCapture && event.pointerId !== undefined) {
+          viz.releasePointerCapture(event.pointerId);
+        }
       }
       dragState = null;
     });
@@ -597,23 +611,61 @@
 
     function renderDetails(nodeData) {
       const container = document.getElementById("details-content");
-      const highlightList = nodeData.highlights.map(item => `<li>${item}</li>`).join("");
-      const docs = nodeData.docs.map(doc => `<a href="${doc.href}" target="_blank" rel="noopener noreferrer">📄 ${doc.label}</a>`).join("");
-      const commands = nodeData.commands.map(cmd => `<code>${cmd}</code>`).join("");
+      if (container.replaceChildren) {
+        container.replaceChildren();
+      } else {
+        container.innerHTML = "";
+      }
 
-      container.innerHTML = `
-        <h2>${nodeData.label}</h2>
-        <p class="summary">${nodeData.summary}</p>
+      const title = document.createElement("h2");
+      title.textContent = nodeData.label;
+      container.appendChild(title);
 
-        <div class="section-title">Key Abilities</div>
-        <ul>${highlightList}</ul>
+      const summary = document.createElement("p");
+      summary.className = "summary";
+      summary.textContent = nodeData.summary;
+      container.appendChild(summary);
 
-        <div class="section-title">Docs & Entry Points</div>
-        <div class="docs">${docs}</div>
+      const abilitiesTitle = document.createElement("div");
+      abilitiesTitle.className = "section-title";
+      abilitiesTitle.textContent = "Key Abilities";
+      container.appendChild(abilitiesTitle);
 
-        <div class="section-title">Try It</div>
-        ${commands}
-      `;
+      const list = document.createElement("ul");
+      nodeData.highlights.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        list.appendChild(li);
+      });
+      container.appendChild(list);
+
+      const docsTitle = document.createElement("div");
+      docsTitle.className = "section-title";
+      docsTitle.textContent = "Docs & Entry Points";
+      container.appendChild(docsTitle);
+
+      const docsWrap = document.createElement("div");
+      docsWrap.className = "docs";
+      nodeData.docs.forEach(doc => {
+        const a = document.createElement("a");
+        a.href = safeHref(doc.href);
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = `📄 ${doc.label}`;
+        docsWrap.appendChild(a);
+      });
+      container.appendChild(docsWrap);
+
+      const cmdsTitle = document.createElement("div");
+      cmdsTitle.className = "section-title";
+      cmdsTitle.textContent = "Try It";
+      container.appendChild(cmdsTitle);
+
+      nodeData.commands.forEach(cmd => {
+        const code = document.createElement("code");
+        code.textContent = cmd;
+        container.appendChild(code);
+      });
     }
 
     function renderLegend() {
