@@ -55,6 +55,13 @@ See [Interactive Runtime Documentation](#production-interactive-runtime) below f
 
 ---
 
+## 🗺️ Interactive Capability Map (New)
+
+- Open `interactive_map.html` in a browser (or run `python -m http.server 8000` and visit <http://localhost:8000/interactive_map.html>) to explore how Victor's cognition, runtime, skills, safety, and interfaces connect.
+- Click any node to see what it does, related documentation inside this repo, and copy/paste commands to try it locally.
+
+---
+
 ## 🏆 NEW: SSI Framework Dataset (Nov 2025)
 
 **Complete production-ready dataset for Sovereign Intelligence Systems**
