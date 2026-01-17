@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """
-Guided setup CLI/TUI fallback for Victor.
+Guided setup wizard for Victor (beginner-friendly).
 
-Provides a step-by-step interactive flow to:
+Flow:
 - Validate Python environment
 - Install dependencies (delegates to bootstrap.py)
 - Run a smoke check
+- Optionally launch the runtime
+
+One-command, no-prompt mode:
+    python guided_setup.py --auto --launch-runtime
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import subprocess
@@ -18,6 +23,7 @@ from typing import Callable, List, Tuple
 
 ROOT = Path(__file__).parent
 BOOTSTRAP = ROOT / "bootstrap.py"
+RUNTIME = ROOT / "victor_interactive.py"
 
 
 def _run(cmd: List[str]) -> Tuple[int, str, str]:
@@ -67,28 +73,78 @@ def step_smoke() -> bool:
     return code == 0
 
 
-def main() -> int:
+def step_launch_runtime() -> bool:
+    if not RUNTIME.exists():
+        print("Runtime script not found; skipping launch.")
+        return False
+    print("Launching Victor runtime in a new process...")
+    try:
+        subprocess.Popen([sys.executable, str(RUNTIME)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print("Victor runtime started. Check the other window/process for the interface.")
+        return True
+    except Exception as exc:  # pragma: no cover - launch depends on env
+        print(f"Launch failed: {exc}")
+        return False
+
+
+def parse_args(argv: List[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Victor Guided Setup Wizard")
+    parser.add_argument(
+        "--auto",
+        "--yes",
+        action="store_true",
+        help="Run all steps without prompts (best for non-technical users).",
+    )
+    parser.add_argument(
+        "--launch-runtime",
+        action="store_true",
+        help="Attempt to launch victor_interactive.py after setup.",
+    )
+    parser.add_argument(
+        "--skip-smoke",
+        action="store_true",
+        help="Skip smoke check step.",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: List[str] | None = None) -> int:
+    args = parse_args(argv)
+
     print("Victor Guided Setup")
     print("-------------------")
-    if not _prompt_bool("Continue with setup?", True):
+    print("This wizard will install everything, run a check, and (optionally) launch Victor.")
+    if not args.auto and not _prompt_bool("Continue with setup?", True):
         return 1
 
     steps = [
         ("Validate Python environment", step_validate_python),
         ("Install dependencies", step_install),
-        ("Run smoke check", step_smoke),
     ]
+    if not args.skip_smoke:
+        steps.append(("Run smoke check", step_smoke))
+    if args.launch_runtime:
+        steps.append(("Launch Victor runtime", step_launch_runtime))
 
     results = []
     for title, fn in steps:
         ok = run_step(title, fn)
         results.append((title, ok))
-        if not ok and not _prompt_bool("Continue despite failure?", False):
-            break
+        if not ok and not args.auto:
+            if not _prompt_bool("Continue despite failure?", False):
+                break
 
     print("\nSummary:")
-    print(json.dumps({title: ok for title, ok in results}, indent=2))
-    return 0 if all(ok for _, ok in results) else 1
+    summary = {title: ok for title, ok in results}
+    print(json.dumps(summary, indent=2))
+    all_ok = all(ok for _, ok in results)
+    if all_ok:
+        print("\n✅ Setup complete. Next: open the Victor runtime window. If it didn't launch, run:")
+        print(f"  python {RUNTIME.name}")
+    else:
+        print("\n⚠️ Some steps failed. Re-run with:")
+        print("  python guided_setup.py --auto --launch-runtime")
+    return 0 if all_ok else 1
 
 
 if __name__ == "__main__":

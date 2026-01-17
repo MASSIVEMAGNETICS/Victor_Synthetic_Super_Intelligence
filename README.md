@@ -173,8 +173,9 @@ python victor_interactive.py
 ```
 
 **Setup Flow**
+- Easiest (no prompts, recommended for beginners): `python guided_setup.py --auto --launch-runtime`
 - `bootstrap.py` installs `requirements.txt` and runs a smoke import check (use `--allow-missing` if optional deps are unavailable).
-- `guided_setup.py` walks through validation, install, and smoke steps with prompts.
+- `guided_setup.py` walks through validation, install, and smoke steps with prompts (or `--auto` to skip prompts, `--launch-runtime` to start Victor after setup).
 - `tools/lint_and_test.py` provides a minimal lint/test harness (`--skip-tests` to run compile-only).
 - Set `VICTOR_VERBOSE_LOG=1` to enable verbose logging in the runtime and interactive shell.
 

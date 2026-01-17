@@ -83,7 +83,12 @@
         app.innerHTML = `
           <div class="card">
             <h2>One-click flow</h2>
-            <p>Click once to walk through install → smoke → guided setup → launch. Commands run in your terminal.</p>
+            <p>Copy/paste this command for a full no-prompt setup (best for non-technical users):</p>
+            <div class="step" style="align-items:flex-start;">
+              <span class="badge status-ok">Copy</span>
+              <div><code>python guided_setup.py --auto --launch-runtime</code></div>
+            </div>
+            <p style="margin-top:8px;">Or click once to walk through install → smoke → guided setup → launch (manual tracking only).</p>
             <div style="display:flex;gap:12px;flex-wrap:wrap">
               <button class="btn" id="mark-next" ${busy ? "disabled" : ""}>Mark next step</button>
               <button class="btn" id="reset" style="background:#6e40c9">Reset</button>
