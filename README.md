@@ -162,6 +162,23 @@ Each notebook includes:
 The fastest way to experience Victor's full capabilities:
 
 ```bash
+# One-command bootstrap (install + smoke)
+python bootstrap.py
+
+# Guided setup (interactive)
+python guided_setup.py
+
+# Launch production interactive runtime
+python victor_interactive.py
+```
+
+**Setup Flow**
+- `bootstrap.py` installs `requirements.txt` and runs a smoke import check (use `--allow-missing` if optional deps are unavailable).
+- `guided_setup.py` walks through validation, install, and smoke steps with prompts.
+- `tools/lint_and_test.py` provides a minimal lint/test harness (`--skip-tests` to run compile-only).
+- Set `VICTOR_VERBOSE_LOG=1` to enable verbose logging in the runtime and interactive shell.
+
+```bash
 # Install dependencies
 python install_complete.py
 
@@ -188,6 +205,10 @@ Victor> status        # System status
 ```
 
 ---
+
+### 🖥️ Runtime Setup App (One-Click Progress UI)
+
+Open `runtime_setup_app/index.html` in a browser for a lightweight vanilla JS guide that walks through install → smoke → guided setup → launch. It shows commands, progress badges, and troubleshooting tips. (No build step or bundler required.)
 
 ### 🎬 NEW: Full Working Demo
 

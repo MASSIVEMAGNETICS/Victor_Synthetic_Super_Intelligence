@@ -28,12 +28,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 import uuid
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger('victor_runtime')
+from victor_runtime.logging_utils import VERBOSE_LOGGING, configure_logger
+
+logger = configure_logger('victor_runtime')
 
 
 class RuntimeState(Enum):
@@ -353,12 +350,15 @@ class VictorPersonalRuntime:
         if self.config_path and Path(self.config_path).exists():
             with open(self.config_path, 'r') as f:
                 self.config = json.load(f)
+            logger.debug("Loaded config from explicit path %s", self.config_path)
         elif config_file.exists():
             with open(config_file, 'r') as f:
                 self.config = json.load(f)
+            logger.debug("Loaded config from data dir %s", config_file)
         else:
             self.config = self._get_default_config()
             await self._save_config()
+            logger.debug("Created default config at %s", config_file)
     
     def _get_default_config(self) -> Dict:
         """Get default configuration"""
@@ -395,6 +395,7 @@ class VictorPersonalRuntime:
         config_file = self.data_dir / 'config.json'
         with open(config_file, 'w') as f:
             json.dump(self.config, f, indent=2)
+        logger.debug("Saved config to %s", config_file)
     
     async def _load_consent_records(self):
         """Load previous consent records"""
@@ -450,6 +451,7 @@ class VictorPersonalRuntime:
                not self.consent_records[permission].granted:
                 
                 # Request consent
+                logger.debug("Requesting consent for %s", permission.value)
                 granted = await self.request_consent(permission)
                 if not granted:
                     logger.warning(f"Consent not granted for: {permission.value}")

@@ -44,10 +44,13 @@ class Colors:
 # Add project paths
 sys.path.insert(0, str(Path(__file__).parent))
 
+from victor_runtime.logging_utils import VERBOSE_LOGGING, v_log
+
 # Import Victor systems
 try:
     from victor_hub.victor_boot import VictorHub, Task, Result
     VICTOR_HUB_AVAILABLE = True
+    v_log("Victor Hub loaded")
 except ImportError:
     VICTOR_HUB_AVAILABLE = False
     print(f"{Colors.WARNING}Warning: Victor Hub not available{Colors.ENDC}")
@@ -56,6 +59,7 @@ try:
     from visual_engine.backend.victor_visual_server import VictorVisualServer
     from visual_engine.backend.victor_visual_bridge import VictorVisualBridge
     VISUAL_ENGINE_AVAILABLE = True
+    v_log("Visual Engine loaded")
 except ImportError:
     VISUAL_ENGINE_AVAILABLE = False
     print(f"{Colors.WARNING}Warning: Visual Engine not available{Colors.ENDC}")
@@ -63,6 +67,7 @@ except ImportError:
 try:
     from advanced_ai.tensor_core import Tensor, BLOODLINE_HASH
     TENSOR_CORE_AVAILABLE = True
+    v_log("Tensor Core loaded")
 except ImportError:
     TENSOR_CORE_AVAILABLE = False
     print(f"{Colors.WARNING}Warning: Tensor Core not available{Colors.ENDC}")
@@ -113,6 +118,7 @@ class SessionManager:
         if not success:
             self.metrics['errors'] += 1
         self.autosave()
+        v_log(f"Logged command '{command}' (success={success})")
     
     def update_metrics(self, metric: str, value: int = 1):
         """Update session metrics"""
@@ -134,6 +140,7 @@ class SessionManager:
             }
             with open(self.session_file, 'w') as f:
                 json.dump(state, f, indent=2)
+            v_log(f"Session autosaved to {self.session_file}")
         except Exception as e:
             print(f"{Colors.WARNING}Autosave failed: {e}{Colors.ENDC}")
     
